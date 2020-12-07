@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".auth.login.loginActivity"
+    android:background="@color/colorComedyBlue">
+
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:id="@+id/logoRel"
+        android:background="@color/colorComedyBlue">
+
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="50dp"
+            app:cardCornerRadius="10dp">
+
+            <ImageView
+                android:layout_width="150dp"
+                android:layout_height="75dp"
+                android:id="@+id/logoIv"
+                android:layout_centerHorizontal="true"
+                android:src="@drawable/mspluglogo" />
+        </androidx.cardview.widget.CardView>
+
+
+    </RelativeLayout>
+
+
+
+
+
+    <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_below="@id/logoRel"
+            android:background="@drawable/rounded_corner_top">
+
+
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/ic_mail"
+                android:layout_marginTop="60dp"
+                android:layout_marginLeft="30dp"/>
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="310dp"
+                android:layout_height="60dp"
+                android:id="@+id/emailTl"
+                android:layout_marginTop="40dp"
+                android:layout_marginLeft="70dp"
+                android:layout_marginRight="30dp"
+                android:layout_marginBottom="@dimen/margin_medium"
+                android:textColorHint="@color/colorComedyBlue">
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:hint="email"
+                    android:textSize="15sp"
+                    android:padding="5dp"
+                    android:id="@+id/emailTv"
+                    android:textColorHint="@color/colorComedyBlue"
+                    android:textColor="@color/colorComedyBlue"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_mail"
+            android:layout_below="@id/emailTl"
+            android:layout_marginTop="40dp"
+            android:layout_marginLeft="30dp"/>
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="300dp"
+                android:layout_height="60dp"
+                android:id="@+id/passwordTl"
+                android:layout_below="@id/emailTl"
+                android:layout_marginTop="20dp"
+                android:layout_marginLeft="70dp"
+                android:layout_marginRight="30dp"
+                app:passwordToggleEnabled="true"
+                android:textColorHint="@color/colorComedyBlue">
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:hint="password"
+                    android:textColorHint="@color/colorComedyBlue"
+                    android:padding="5dp"
+                    android:textSize="15sp"
+                    android:id="@+id/passwordTv"
+                    android:textColor="@color/colorComedyBlue"
+                    android:inputType="textPassword"/>
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/passwordTl"
+                android:layout_marginTop="30dp"
+                app:cardElevation="@dimen/elevation_medium"
+                app:cardCornerRadius="5dp"
+                android:layout_centerHorizontal="true">
+1
+                <Button
+                    android:layout_width="100dp"
+                    android:layout_height="50dp"
+                    android:background="@color/colorComedyBlue"
+                    android:text="login"
+                    android:id="@+id/loginBtn"
+                    android:textColor="@color/colorWhite"></Button>
+            </androidx.cardview.widget.CardView>
+        </RelativeLayout>
+
+
+</RelativeLayout>
