@@ -3,8 +3,11 @@
     package="com.example.msplug">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
     <application
+        android:name=".notification.App"
+        android:resource="@drawable/msplugnotificationicon"
         android:allowBackup="true"
         android:icon="@drawable/mspluglogo"
         android:label="@string/app_name"
@@ -20,6 +23,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service android:name=".background_service.BackgroundService"/>
     </application>
 
 </manifest>

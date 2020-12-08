@@ -1,5 +1,8 @@
 package com.example.msplug.utils.sharedPrefences;
 
 public class Constants {
-    public static String KEY_TOKEN = "token";
+    //User Token
+    public static final String KEY_TOKEN = "token";
+    // Used to save state of connecteion
+    public static final String IS_CONNECTED = "connected";
 }

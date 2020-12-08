@@ -52,7 +52,8 @@ public class loginActivity extends AppCompatActivity {
         }
 
         getSupportActionBar().hide();
-
+        Intent Dashboard = new Intent(loginActivity.this, dashboardActivity.class);
+        startActivity(Dashboard);
 
         //initialize the views
         emailID = findViewById(R.id.emailTv);
@@ -79,7 +80,7 @@ public class loginActivity extends AppCompatActivity {
                 }
                 else {
                     // Hardcoding device id for now
-                     verifyUser(email, password, "PB0WB6J6");
+                     verifyUser(email, password, "EN1501Q5");
                 }
             }
         });
@@ -94,19 +95,17 @@ public class loginActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<loginresponse> call, Response<loginresponse> response) {
                 pd.dismiss();
-                Log.d(TAG, "onResponse: "+"Successful");
                 loginresponse resp = (loginresponse) response.body();
 
+                Toast.makeText(loginActivity.this, ""+resp.toString(), Toast.LENGTH_SHORT).show();
 
                 String respJson = resp.toString();
-                Log.d(TAG, "XdResponse: "+respJson);
 
                 JSONObject jsonObject = null;
                 try {
                     jsonObject = new JSONObject(respJson);
                     JSONObject jsonObjectdata = jsonObject.getJSONObject("data");
 
-                    Log.d(TAG, "data object found: "+jsonObjectdata.toString());
                     if (jsonObjectdata != null){
                         String deviceIDs = jsonObjectdata.getString("deviceID");
                         String token = jsonObjectdata.getString("token");
