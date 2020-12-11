@@ -1,11 +1,19 @@
 package com.example.msplug.dashboard.home;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import android.telephony.SubscriptionInfo;
+import android.telephony.SubscriptionManager;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
@@ -30,6 +38,10 @@ import com.example.msplug.retrofit.endpoint_status_update.statusbody;
 import com.example.msplug.retrofit.endpoint_status_update.statusresponse;
 import com.example.msplug.utils.sharedPrefences.PreferenceUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -47,7 +59,7 @@ public class homeFragment extends Fragment {
     private boolean service_off = true;
     private Switch toggleBtn;
     private LottieAnimationView dummyAnim;
-
+    private static final int REQUEST_PHONE_CALL = 1;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -93,7 +105,9 @@ public class homeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CALL_PHONE},REQUEST_PHONE_CALL);
+        }
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         toggleBtn = view.findViewById(R.id.toggleBtn);
         dummyAnim = view.findViewById(R.id.dummy_anim);
@@ -120,8 +134,6 @@ public class homeFragment extends Fragment {
                 }
             }
         });
-
-
         return view;
     }
 
@@ -155,6 +167,14 @@ public class homeFragment extends Fragment {
             }
         });
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+
+        if(grantResults.length>0 && grantResults[0]== PackageManager.PERMISSION_GRANTED){
+        }
+    }
+
 
     private void stopBackgroundService(String status) {
         updateStatus("offline");
