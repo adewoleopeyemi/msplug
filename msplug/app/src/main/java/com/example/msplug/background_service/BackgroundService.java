@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -13,11 +14,12 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
-import android.os.Process;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -31,10 +33,6 @@ import com.example.msplug.retrofit.endpoints.endpoint_request_detail.requestdeta
 import com.example.msplug.retrofit.endpoints.endpoint_request_list.apirequestlist;
 import com.example.msplug.retrofit.endpoints.endpoint_request_list.requestlistresponse;
 
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -45,34 +43,29 @@ import static com.example.msplug.utils.Constants.serviceStatusConstants.ONLINE_S
 
 public class BackgroundService extends Service {
 
-    private static boolean sServiceHandleCacheEnabled = true;
-    TelephonyManager telephonyManager;
-    TelephonyManager.UssdResponseCallback ussdResponseCallback;
     Handler handler;
     boolean stillLoading;
+    Runnable runnable;
+    Handler handlerx;
+
 
     @Override
     public void onCreate() {
-        try {
-            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
-            r.play();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         super.onCreate();
     }
 
     @Override
     public void onDestroy() {
-        try {
-            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
-            r.play();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         super.onDestroy();
+        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        // Vibrate for 500 milliseconds
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            v.vibrate(VibrationEffect.createOneShot(2000, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            //deprecated in API 26
+            v.vibrate(2000);
+        }
+        handlerx.removeCallbacks(runnable);
     }
 
     @Override
@@ -102,19 +95,20 @@ public class BackgroundService extends Service {
 
         startForeground(1, notification);
 
-        //do heavy work in a background thread using intentService;
+        handlerx = new Handler();
+        final int delay = 20000; // 1000 milliseconds == 1 second
 
-        Handler handlerx = new Handler();
-        final int delay = 25000; // 1000 milliseconds == 1 second
 
         stillLoading = true;
-        handlerx.postDelayed(new Runnable() {
+
+        runnable = new Runnable() {
+            @Override
             public void run() {
                 refreshevery15sec();
                 handlerx.postDelayed(this, delay);
             }
-        }, delay);
-
+        };
+        runnable.run();
         return START_NOT_STICKY;
     }
 
@@ -186,78 +180,6 @@ public class BackgroundService extends Service {
     }
 
 
-    /**
-    private ITelephony getITelephony() {
-        // Keeps cache disabled until test fixes are checked into AOSP.
-        if (!sServiceHandleCacheEnabled) {
-            return ITelephony.Stub.asInterface(
-                    TelephonyFrameworkInitializer
-                            .getTelephonyServiceManager()
-                            .getTelephonyServiceRegisterer()
-                            .get());
-        }
-
-        if (sITelephony == null) {
-            ITelephony temp = ITelephony.Stub.asInterface(
-                    TelephonyFrameworkInitializer
-                            .getTelephonyServiceManager()
-                            .getTelephonyServiceRegisterer()
-                            .get());
-            synchronized (sCacheLock) {
-                if (sITelephony == null && temp != null) {
-                    try {
-                        sITelephony = temp;
-                        sITelephony.asBinder().linkToDeath(sServiceDeath, 0);
-                    } catch (Exception e) {
-                        // something has gone horribly wrong
-                        sITelephony = null;
-                    }
-                }
-            }
-        }
-        return sITelephony;
-    }
-
-
-
-
-    public static final String USSD_RESPONSE = "USSD_RESPONSE";
-    public static final int USSD_RETURN_SUCCESS = 100;
-    @RequiresPermission(android.Manifest.permission.CALL_PHONE)
-    public void sendUssdRequest(String ussdRequest,
-                                final TelephonyManager.UssdResponseCallback callback, Handler handler) {
-        //final TelephonyManager telephonyManager = this;
-
-        ResultReceiver wrappedCallback = new ResultReceiver(handler) {
-            @SuppressLint("NewApi")
-            @Override
-            protected void onReceiveResult(int resultCode, Bundle ussdResponse) {
-                UssdResponse response = ussdResponse.getParcelable(USSD_RESPONSE);
-
-                if (resultCode == USSD_RETURN_SUCCESS) {
-                    callback.onReceiveUssdResponse(telephonyManager, response.getUssdRequest(),
-                            response.getReturnMessage());
-                } else {
-                    callback.onReceiveUssdResponseFailed(telephonyManager,
-                            response.getUssdRequest(), resultCode);
-                }
-            }
-        };
-
-        try {
-            ITelephony telephony = getITelephony();
-            if (telephony != null) {
-                telephony.handleUssdRequest(getSubId(), ussdRequest, wrappedCallback);
-            }
-        } catch (RemoteException e) {
-            Log.e(TAG, "Error calling ITelephony#sendUSSDCode", e);
-            UssdResponse response = new UssdResponse(ussdRequest, "");
-            Bundle returnData = new Bundle();
-            returnData.putParcelable(USSD_RESPONSE, response);
-            wrappedCallback.send(USSD_ERROR_SERVICE_UNAVAIL, returnData);
-        }
-    }**/
-
     //Comenack here and remove toast message for oResponse
     private void updaterequestdetails(String response_message, String status, int requestID){
         Retrofit retrofit = Client.getRetrofit("https://www.msplug.com/api/");
@@ -270,7 +192,7 @@ public class BackgroundService extends Service {
             @Override
             public void onResponse(Call<requestlistresponse> call, Response<requestlistresponse> response) {
                 requestlistresponse resp = (requestlistresponse) response.body();
-                Toast.makeText(BackgroundService.this, "PATCH request sent with status: "+resp.getStatus(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(BackgroundService.this, "PATCH request sent with status: "+resp.getDevice_name(), Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -286,23 +208,24 @@ public class BackgroundService extends Service {
 
         manager.createForSubscriptionId(position);
         Log.d("networkprovider",manager.getNetworkOperatorName());
-            manager.sendUssdRequest("*123#", new TelephonyManager.UssdResponseCallback() {
+            manager.sendUssdRequest(ussd, new TelephonyManager.UssdResponseCallback() {
                 @Override
                 public void onReceiveUssdResponse(TelephonyManager telephonyManager, String request, CharSequence response) {
                     super.onReceiveUssdResponse(telephonyManager, request, response);
                     Log.d("BackgroundService", "onReceiveUssdResponse: "+response.toString());
+                    Toast.makeText(BackgroundService.this, ""+response.toString(), Toast.LENGTH_SHORT).show();
                     updaterequestdetails(response.toString(), "completed", id);
                 }
 
                 @Override
                 public void onReceiveUssdResponseFailed(TelephonyManager telephonyManager, String request, int failureCode) {
                     super.onReceiveUssdResponseFailed(telephonyManager, request, failureCode);
-                    updaterequestdetails("request failed "+request.toString(), "Failed", id);
+                    updaterequestdetails("request failed "+request.toString(), "failed", id);
                     Log.d(this.getClass().getName(), "response" + failureCode);
+                    Toast.makeText(BackgroundService.this, "ussd code run failed "+request, Toast.LENGTH_SHORT).show();
                 }
             }, new Handler());
         }
-
 
     @Nullable
     @Override
