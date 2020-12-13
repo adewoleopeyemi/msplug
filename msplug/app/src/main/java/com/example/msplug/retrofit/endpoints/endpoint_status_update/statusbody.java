@@ -1,6 +1,5 @@
-package com.example.msplug.retrofit.endpoint_status_update;
+package com.example.msplug.retrofit.endpoints.endpoint_status_update;
 
-import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 public class statusbody {

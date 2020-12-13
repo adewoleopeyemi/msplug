@@ -1,10 +1,10 @@
-package com.example.msplug.retrofit.endpoint_request_list;
+package com.example.msplug.retrofit.endpoints.endpoint_request_list;
 
 import com.google.gson.annotations.SerializedName;
 
 public class requestlistresponse {
     @SerializedName("id")
-    private transient int id;
+    private int id;
     @SerializedName("device")
     private String device;
     @SerializedName("device_name")

@@ -3,44 +3,29 @@ package com.example.msplug.dashboard.home;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import android.telephony.SubscriptionInfo;
-import android.telephony.SubscriptionManager;
 import android.util.Log;
-import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.example.msplug.R;
-import com.example.msplug.auth.login.loginActivity;
 import com.example.msplug.background_service.BackgroundService;
-import com.example.msplug.dashboard.view.dashboardActivity;
 import com.example.msplug.retrofit.client.Client;
-import com.example.msplug.retrofit.endpoint_login.apilogin;
-import com.example.msplug.retrofit.endpoint_login.apistatusupdate;
-import com.example.msplug.retrofit.endpoint_login.loginresponse;
-import com.example.msplug.retrofit.endpoint_status_update.statusbody;
-import com.example.msplug.retrofit.endpoint_status_update.statusresponse;
+import com.example.msplug.retrofit.endpoints.endpoint_login.apistatusupdate;
+import com.example.msplug.retrofit.endpoints.endpoint_status_update.statusbody;
+import com.example.msplug.retrofit.endpoints.endpoint_status_update.statusresponse;
 import com.example.msplug.utils.sharedPrefences.PreferenceUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -107,6 +92,9 @@ public class homeFragment extends Fragment {
         // Inflate the layout for this fragment
         if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CALL_PHONE},REQUEST_PHONE_CALL);
+        }
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.SEND_SMS},1);
         }
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         toggleBtn = view.findViewById(R.id.toggleBtn);

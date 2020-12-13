@@ -1,4 +1,4 @@
-package com.example.msplug.retrofit.endpoint_login;
+package com.example.msplug.retrofit.endpoints.endpoint_login;
 
 import com.google.gson.annotations.SerializedName;
 

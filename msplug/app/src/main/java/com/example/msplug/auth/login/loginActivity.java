@@ -17,8 +17,8 @@ import android.widget.Toast;
 import com.example.msplug.R;
 import com.example.msplug.dashboard.view.dashboardActivity;
 import com.example.msplug.retrofit.client.Client;
-import com.example.msplug.retrofit.endpoint_login.apilogin;
-import com.example.msplug.retrofit.endpoint_login.loginresponse;
+import com.example.msplug.retrofit.endpoints.endpoint_login.apilogin;
+import com.example.msplug.retrofit.endpoints.endpoint_login.loginresponse;
 import com.example.msplug.utils.sharedPrefences.PreferenceUtils;
 
 import org.json.JSONException;

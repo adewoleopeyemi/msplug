@@ -1,4 +1,4 @@
-package com.example.msplug.retrofit.endpoint_request_list;
+package com.example.msplug.retrofit.endpoints.endpoint_request_list;
 
 import retrofit2.Call;
 import retrofit2.http.GET;

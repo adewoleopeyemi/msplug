@@ -1,29 +1,19 @@
 package com.example.msplug.background_service;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.ActionBar;
-import android.app.Activity;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.os.RemoteException;
-import android.os.ResultReceiver;
-import android.telecom.PhoneAccount;
-import android.telecom.TelecomManager;
-import android.telephony.SubscriptionInfo;
-import android.telephony.SubscriptionManager;
+import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -31,18 +21,19 @@ import android.os.Process;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.annotation.RequiresPermission;
-import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
 import com.example.msplug.R;
 import com.example.msplug.dashboard.view.dashboardActivity;
 import com.example.msplug.retrofit.client.Client;
-import com.example.msplug.retrofit.endpoint_request_list.apirequestlist;
-import com.example.msplug.retrofit.endpoint_request_list.requestlistresponse;
+import com.example.msplug.retrofit.endpoints.endpoint_request_detail.apirequestdetail;
+import com.example.msplug.retrofit.endpoints.endpoint_request_detail.requestdetailsbody;
+import com.example.msplug.retrofit.endpoints.endpoint_request_list.apirequestlist;
+import com.example.msplug.retrofit.endpoints.endpoint_request_list.requestlistresponse;
 
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -58,15 +49,29 @@ public class BackgroundService extends Service {
     TelephonyManager telephonyManager;
     TelephonyManager.UssdResponseCallback ussdResponseCallback;
     Handler handler;
-
+    boolean stillLoading;
 
     @Override
     public void onCreate() {
+        try {
+            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+            r.play();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         super.onCreate();
     }
 
     @Override
     public void onDestroy() {
+        try {
+            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+            r.play();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         super.onDestroy();
     }
 
@@ -102,6 +107,7 @@ public class BackgroundService extends Service {
         Handler handlerx = new Handler();
         final int delay = 25000; // 1000 milliseconds == 1 second
 
+        stillLoading = true;
         handlerx.postDelayed(new Runnable() {
             public void run() {
                 refreshevery15sec();
@@ -123,13 +129,23 @@ public class BackgroundService extends Service {
                 String requesttype = resp.getRequest_type();
                 String sim_slot = resp.getSim_slot();
                 String command = resp.getCommand();
+                int id = resp.getId();
+                Toast.makeText(BackgroundService.this, "id for patch"+id+ " command: "+command, Toast.LENGTH_SHORT).show();
+                Log.d("BackgroundService", "SCS"+ id);
+                String device = resp.getDevice();
+                String device_name = resp.getDevice_name();
+                String recipient = resp.getReceipient();
+
                 if (requesttype.equals("USSD")) {
                     Toast.makeText(BackgroundService.this, "dialing ussd", Toast.LENGTH_SHORT).show();
-                    dialUSSD(sim_slot, command);
+                    dialUSSD(sim_slot, command, id);
+                    stillLoading = false;
                 } else if (requesttype.equals("SMS")) {
                     Toast.makeText(BackgroundService.this, "sending sms", Toast.LENGTH_SHORT).show();
-                    sendSMS(sim_slot);
+                    sendSMS(sim_slot, recipient, command, id);
+                    stillLoading = false;
                 }
+
             }
 
             @Override
@@ -140,15 +156,25 @@ public class BackgroundService extends Service {
     }
 
 
-    private void sendSMS(String sim_slot) {
+
+    @SuppressLint("NewApi")
+    private void sendSMS(String sim_slot, String recipient, String command, int id) {
+        int position = 0;
+        if (sim_slot.equals("sim1")) {
+            position = 0;
+        } else if (sim_slot.equals("sim2")) {
+            position = 1;
+        }
+
+        SmsManager smsMan = SmsManager.getDefault();
+        smsMan = SmsManager.getSmsManagerForSubscriptionId(position);
+        smsMan.sendTextMessage(recipient, null, command, null, null);
+        updaterequestdetails(command + " sent to " + recipient + "successfull", "completed", id);
     }
 
-    private boolean isSystemProcess() {
-        return Process.myUid() == Process.SYSTEM_UID;
-    }
 
     @SuppressLint("MissingPermission")
-    private void dialUSSD(String sim_slot, String command) {
+    private void dialUSSD(String sim_slot, String command, int id) {
         Toast.makeText(this, "dialer function called", Toast.LENGTH_SHORT).show();
         int position = 0;
         if (sim_slot.equals("sim1")) {
@@ -156,7 +182,7 @@ public class BackgroundService extends Service {
         } else if (sim_slot.equals("sim2")) {
             position = 1;
         }
-        runUssdCode(command, position);
+        runUssdCode(command, position, id);
     }
 
 
@@ -232,10 +258,30 @@ public class BackgroundService extends Service {
         }
     }**/
 
-    @SuppressLint({"MissingPermission", "NewApi"})
-    public void runUssdCode(String ussd, int position) {
+    //Comenack here and remove toast message for oResponse
+    private void updaterequestdetails(String response_message, String status, int requestID){
+        Retrofit retrofit = Client.getRetrofit("https://www.msplug.com/api/");
+        apirequestdetail requestdetails = retrofit.create(apirequestdetail.class);
+        requestdetailsbody body = new requestdetailsbody();
+        body.setResponse_message(response_message);
+        body.setStatus(status);
+        Call<requestlistresponse> call = requestdetails.updateRequestDetails(requestID, body);
+        call.enqueue(new Callback<requestlistresponse>() {
+            @Override
+            public void onResponse(Call<requestlistresponse> call, Response<requestlistresponse> response) {
+                requestlistresponse resp = (requestlistresponse) response.body();
+                Toast.makeText(BackgroundService.this, "PATCH request sent with status: "+resp.getStatus(), Toast.LENGTH_SHORT).show();
+            }
 
-        Log.d(this.getClass().getName(), "code run garne");
+            @Override
+            public void onFailure(Call<requestlistresponse> call, Throwable t) {
+                Toast.makeText(BackgroundService.this, ""+t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @SuppressLint({"MissingPermission", "NewApi"})
+    public void runUssdCode(String ussd, int position, int id) {
         TelephonyManager manager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
 
         manager.createForSubscriptionId(position);
@@ -244,15 +290,15 @@ public class BackgroundService extends Service {
                 @Override
                 public void onReceiveUssdResponse(TelephonyManager telephonyManager, String request, CharSequence response) {
                     super.onReceiveUssdResponse(telephonyManager, request, response);
-                    Toast.makeText(BackgroundService.this, ""+response.toString(), Toast.LENGTH_SHORT).show();
+                    Log.d("BackgroundService", "onReceiveUssdResponse: "+response.toString());
+                    updaterequestdetails(response.toString(), "completed", id);
                 }
 
                 @Override
                 public void onReceiveUssdResponseFailed(TelephonyManager telephonyManager, String request, int failureCode) {
                     super.onReceiveUssdResponseFailed(telephonyManager, request, failureCode);
+                    updaterequestdetails("request failed "+request.toString(), "Failed", id);
                     Log.d(this.getClass().getName(), "response" + failureCode);
-
-
                 }
             }, new Handler());
         }

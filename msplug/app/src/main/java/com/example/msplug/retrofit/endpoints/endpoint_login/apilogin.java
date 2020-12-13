@@ -1,4 +1,4 @@
-package com.example.msplug.retrofit.endpoint_login;
+package com.example.msplug.retrofit.endpoints.endpoint_login;
 
 import retrofit2.Call;
 import retrofit2.http.Field;
