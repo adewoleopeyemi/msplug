@@ -78,7 +78,6 @@ public class BackgroundService extends Service {
         };
 
         String input = intent.getStringExtra(ONLINE_STATUS);
-
         Intent notificationIntent = new Intent(this, dashboardActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this,
                 0,

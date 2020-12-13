@@ -8,12 +8,20 @@
     tools:context=".dashboard.view.dashboardActivity">
 
 
+
     <FrameLayout
         android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1"></FrameLayout>
 
+    <com.airbnb.lottie.LottieAnimationView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:lottie_rawRes="@raw/homepageanim"
+        app:lottie_loop="true"
+        android:id="@+id/noInternetConnection"
+        android:elevation="25dp"/>
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
