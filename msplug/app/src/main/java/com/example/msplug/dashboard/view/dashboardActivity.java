@@ -12,13 +12,18 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.example.msplug.R;
 import com.example.msplug.dashboard.home.homeFragment;
 import com.example.msplug.dashboard.messages.messagesFragment;
+import com.example.msplug.utils.connectionchecker.ConnectionCheckerApp;
 import com.example.msplug.utils.connectionchecker.ConnectivityReceiver;
 import com.example.msplug.utils.connectionchecker.InternetConnectionService;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -27,6 +32,7 @@ public class dashboardActivity extends AppCompatActivity implements Connectivity
     LottieAnimationView networkIndicatorAnim;
     public static final String BroadcastStringForAction = "checkinternet";
     IntentFilter mIntentFilter;
+    RelativeLayout noInternetRelLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,25 +48,37 @@ public class dashboardActivity extends AppCompatActivity implements Connectivity
         startService(service);
 
 
+        noInternetRelLayout = findViewById(R.id.noInternetRelLayout);
+        networkIndicatorAnim = findViewById(R.id.noInternetConnection);
+        networkIndicatorAnim.playAnimation();
 
+        //Checks constantly for internet connection
+        Handler handler = new Handler();
+        Runnable periodicUpdate = new Runnable() {
+            @Override
+            public void run() {
+                ConnectivityManager cm = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo ni = cm.getActiveNetworkInfo();
+                if (ni != null && ni.isConnectedOrConnecting()){
+                    noInternetRelLayout.setVisibility(View.GONE);
+                }
+                else{
+                    noInternetRelLayout.setVisibility(View.VISIBLE);
+                }
+                handler.postDelayed(this, 1*500- SystemClock.elapsedRealtime()%500);
+            }
+
+        };
+        periodicUpdate.run();
+
+
+        BottomNavigationView navigationView = (BottomNavigationView) findViewById(R.id.navigation);
+        navigationView.setOnNavigationItemSelectedListener(selectedListener);
 
         homeFragment fragment1 = new homeFragment();
         FragmentTransaction ft1 = getSupportFragmentManager().beginTransaction();
         ft1.replace(R.id.content, fragment1, "");
         ft1.commit();
-
-        networkIndicatorAnim = findViewById(R.id.noInternetConnection);
-        networkIndicatorAnim.playAnimation();
-
-
-        if (!isOnline(getApplicationContext())) {
-            networkIndicatorAnim.setVisibility(View.VISIBLE);
-
-        } else {
-            networkIndicatorAnim.setVisibility(View.GONE);
-        }
-        BottomNavigationView navigationView = (BottomNavigationView) findViewById(R.id.navigation);
-        navigationView.setOnNavigationItemSelectedListener(selectedListener);
     }
 
 
@@ -89,23 +107,15 @@ public class dashboardActivity extends AppCompatActivity implements Connectivity
             };
 
 
-    public boolean isOnline(Context c) {
-        ConnectivityManager cm = (ConnectivityManager) c.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo ni = cm.getActiveNetworkInfo();
-        if (ni != null && ni.isConnectedOrConnecting()) {
-            return true;
-        } else
-            return false;
-    }
 
     public BroadcastReceiver MyReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(BroadcastStringForAction)) {
                 if (intent.getStringExtra("online_status").equals("true")) {
-                    networkIndicatorAnim.setVisibility(View.GONE);
+                    noInternetRelLayout.setVisibility(View.GONE);
                 } else {
-                    networkIndicatorAnim.setVisibility(View.VISIBLE);
+                    noInternetRelLayout.setVisibility(View.VISIBLE);
                 }
             }
         }
@@ -121,7 +131,10 @@ public class dashboardActivity extends AppCompatActivity implements Connectivity
     @Override
     public void onNetworkConnectionChanged(boolean isConnected) {
         if (isConnected) {
-            networkIndicatorAnim.setVisibility(View.GONE);
+            noInternetRelLayout.setVisibility(View.GONE);
+        }
+        else {
+            noInternetRelLayout.setVisibility(View.VISIBLE);
         }
     }
 

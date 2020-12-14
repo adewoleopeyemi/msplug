@@ -15,13 +15,31 @@
         android:layout_height="match_parent"
         android:layout_weight="1"></FrameLayout>
 
-    <com.airbnb.lottie.LottieAnimationView
+
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:lottie_rawRes="@raw/homepageanim"
-        app:lottie_loop="true"
-        android:id="@+id/noInternetConnection"
-        android:elevation="25dp"/>
+        android:id="@+id/noInternetRelLayout"
+        android:background="@android:color/white">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Oops no internet connection found!!"
+            android:layout_above="@id/noInternetConnection"
+            android:layout_marginBottom="50dp"
+            android:textSize="15sp"
+            android:textColor="@color/colorgrey"
+            android:layout_centerHorizontal="true"/>
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            app:lottie_rawRes="@raw/nointcon"
+            app:lottie_loop="true"
+            android:layout_centerInParent="true"
+            android:id="@+id/noInternetConnection"
+            android:elevation="30dp"/>
+    </RelativeLayout>
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"

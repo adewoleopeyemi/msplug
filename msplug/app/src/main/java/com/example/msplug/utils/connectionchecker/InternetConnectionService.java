@@ -46,7 +46,8 @@ public class InternetConnectionService extends Service {
         public void run() {
             handler.postDelayed(periodicUpdate, 1*1000- SystemClock.elapsedRealtime()%1000);
             Intent broadcastIntent = new Intent();
-            broadcastIntent.setAction(dashboardActivity.BroadcastStringForAction);
+            broadcastIntent.setAction("checkinternet");
+            //broadcastIntent.setAction(dashboardActivity.BroadcastStringForAction);
             broadcastIntent.putExtra("online_status", ""+isOnline(InternetConnectionService.this));
             sendBroadcast(broadcastIntent);
         }
