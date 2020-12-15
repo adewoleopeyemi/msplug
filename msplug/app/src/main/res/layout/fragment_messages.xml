@@ -3,12 +3,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".dashboard.messages.messagesFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+
+    <com.google.android.material.tabs.TabLayout
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:id="@+id/tab_layout"
+        app:tabTextColor="@color/colorgrey"
+        app:tabIndicatorColor="@color/colorComedyBlue"
+        app:tabSelectedTextColor="@color/colorComedyBlue"
+        android:background="@color/colorWhite"/>
+    
+    
+    <androidx.viewpager.widget.ViewPager
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:id="@+id/view_pager"/>
 
 </FrameLayout>

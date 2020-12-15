@@ -4,9 +4,9 @@ import com.google.gson.annotations.SerializedName;
 
 public class requestdetailsbody {
     @SerializedName("response_message")
-    private transient String response_message;
+    private String response_message;
     @SerializedName("status")
-    private transient String status;
+    private String status;
 
     public String getResponse_message() {
         return response_message;
