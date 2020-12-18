@@ -2,17 +2,26 @@ package com.example.msplug.dashboard.messages.responses;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.ColorSpace;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.msplug.R;
+import com.example.msplug.dashboard.messages.responses.adapter.AdapterResponses;
+import com.example.msplug.dashboard.messages.responses.models.ModelResponse;
+
+import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -20,7 +29,8 @@ import com.example.msplug.R;
  * create an instance of this fragment.
  */
 public class ResponsesFragment extends Fragment {
-
+    private RecyclerView recyclerView;
+    public  ArrayList<ModelResponse> REQ = new ArrayList<>();
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -53,6 +63,7 @@ public class ResponsesFragment extends Fragment {
         return fragment;
     }
 
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,21 +78,14 @@ public class ResponsesFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_responses, container, false);
-        TextView textView = view.findViewById(R.id.text_view);
-        String sTitle = getArguments().getString("title");
-        textView.setText(sTitle);
+        String sTitle = getArguments().getString("arraylist");
+        recyclerView = view.findViewById(R.id.recycler_view);
+
+        AdapterResponses adapterResponses = new AdapterResponses(getContext(), REQ);
+        //Toast.makeText(mActivity, "From response fragment"+response.get(0).getResponse_message(), Toast.LENGTH_SHORT).show();
+        LinearLayoutManager lm = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(lm);
+        recyclerView.setAdapter(adapterResponses);
         return view;
-    }
-
-    @Override
-    public void onAttach(@NonNull Context context) {
-        mActivity=getActivity();
-        super.onAttach(context);
-    }
-
-    @Override
-    public void onDetach() {
-        mActivity = null;
-        super.onDetach();
     }
 }

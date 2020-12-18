@@ -1,28 +1,39 @@
-package com.example.msplug.retrofit.endpoints.endpoint_request_list;
+package com.example.msplug.dashboard.messages.responses.models;
 
-import com.google.gson.annotations.SerializedName;
+public class ModelResponse {
+    int id;
+    int device;
+    String device_name;
+    String sim_slot;
+    String request_type;
+    String response_message;
+    String Command;
+    String Receipient;
+    String status;
+    String request_date;
 
-public class requestlistresponse {
-    @SerializedName("id")
-    private int id;
-    @SerializedName("device")
-    private int device;
-    @SerializedName("device_name")
-    private String device_name;
-    @SerializedName("sim_slot")
-    private String sim_slot;
-    @SerializedName("request_type")
-    private String request_type;
-    @SerializedName("response_message")
-    private String response_message;
-    @SerializedName("command")
-    private String command;
-    @SerializedName("Receipient")
-    private String Receipient;
-    @SerializedName("status")
-    private String status;
-    @SerializedName("request_date")
-    private String request_date;
+    public String getRequest_date() {
+        return request_date;
+    }
+
+    public void setRequest_date(String request_date) {
+        this.request_date = request_date;
+    }
+
+    public ModelResponse() {
+    }
+
+    public ModelResponse(int id, int device, String device_name, String sim_slot, String request_type, String response_message, String command, String receipient, String status) {
+        this.id = id;
+        this.device = device;
+        this.device_name = device_name;
+        this.sim_slot = sim_slot;
+        this.request_type = request_type;
+        this.response_message = response_message;
+        Command = command;
+        Receipient = receipient;
+        this.status = status;
+    }
 
     public int getId() {
         return id;
@@ -73,11 +84,11 @@ public class requestlistresponse {
     }
 
     public String getCommand() {
-        return command;
+        return Command;
     }
 
     public void setCommand(String command) {
-        this.command = command;
+        Command = command;
     }
 
     public String getReceipient() {
@@ -94,13 +105,5 @@ public class requestlistresponse {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public String getRequest_date() {
-        return request_date;
-    }
-
-    public void setRequest_date(String request_date) {
-        this.request_date = request_date;
     }
 }

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardCornerRadius="5dp"
+    android:layout_margin="5dp"
+    app:cardElevation="15dp">
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/USSD"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="*123#"
+            android:textColor="@color/russianBlack"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/USSD"
+            android:layout_margin="5dp"
+            android:id="@+id/responsemessage"
+            android:text="Main Balance"/>
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/colorComedyBlue"
+            android:layout_below="@id/responsemessage"
+            android:layout_marginTop="10dp"
+            app:cardCornerRadius="15dp"
+            android:id="@+id/cardViewResponseCount">
+            
+            <RelativeLayout
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_below="@id/responsemessage"
+            android:background="@color/colorComedyBlue"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1"
+                android:id="@+id/responseCount"
+                android:textColor="@color/colorWhite"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="5dp"/>
+        </androidx.cardview.widget.CardView>
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/responsemessage"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="10dp"
+            android:text="november 2020"
+            android:id="@+id/date"
+            android:textColor="@color/russianBlack"
+            android:layout_marginTop="20dp"/>
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>

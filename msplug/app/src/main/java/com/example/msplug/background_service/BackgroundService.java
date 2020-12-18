@@ -125,7 +125,7 @@ public class BackgroundService extends Service {
                 int id = resp.getId();
                 Toast.makeText(BackgroundService.this, "id for patch"+id+ " command: "+command, Toast.LENGTH_SHORT).show();
                 Log.d("BackgroundService", "SCS"+ id);
-                String device = resp.getDevice();
+                int device = resp.getDevice();
                 String device_name = resp.getDevice_name();
                 String recipient = resp.getReceipient();
 

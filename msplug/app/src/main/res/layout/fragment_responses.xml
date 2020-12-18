@@ -6,12 +6,9 @@
     tools:context=".dashboard.messages.responses.ResponsesFragment">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/text_view"
-        android:textSize="50sp"
-        android:textStyle="bold"
-        android:gravity="center"/>
+        android:id="@+id/recycler_view"/>
 
 </FrameLayout>
