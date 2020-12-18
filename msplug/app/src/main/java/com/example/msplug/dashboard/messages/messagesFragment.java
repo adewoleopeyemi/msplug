@@ -104,48 +104,11 @@ public class messagesFragment extends Fragment {
         ArrayList<String> pagenames = new ArrayList<>();
         pagenames.add("USSD response");
         pagenames.add("SMS response");
-        fetchUserRequestList();
         prepareViewPager(viewPager, arrayList);
         tabLayout.setupWithViewPager(viewPager);
         return view;
     }
 
-    private void fetchUserRequestList() {
-        Retrofit retrofit = Client.getRetrofit("https://www.msplug.com/api/");
-        apiuserrequestlistbody requestlist = retrofit.create(apiuserrequestlistbody.class);
-
-        Call<List<requestlistresponse>> call = requestlist.getRequestList("EN1501Q5");
-        Toast.makeText(getActivity(), "reached fetch response", Toast.LENGTH_SHORT).show();
-        call.enqueue(new Callback<List<requestlistresponse>>() {
-           @Override
-           public void onResponse(Call<List<requestlistresponse>> call, Response<List<requestlistresponse>> response) {
-               List<requestlistresponse> resp = response.body();
-               Log.d("XmessagesFragment", "XonResponse: "+response.body() + " "+response.message());
-               for (int i=0; i<resp.size(); i++){
-                   requestlistresponse requestlist = resp.get(i);
-                   Toast.makeText(getActivity(), ""+requestlist.getResponse_message(), Toast.LENGTH_SHORT).show();
-                   Log.d("MessgaeFragment", "onResponse: "+resp);
-                   ModelResponse object = new ModelResponse();
-                   object.setId(requestlist.getId());
-                   object.setCommand(requestlist.getCommand());
-                   object.setDevice(requestlist.getDevice());
-                   object.setDevice_name(requestlist.getDevice_name());
-                   object.setReceipient(requestlist.getReceipient());
-                   object.setSim_slot(requestlist.getSim_slot());
-                   object.setRequest_type(requestlist.getRequest_type());
-                   object.setResponse_message(requestlist.getResponse_message());
-                   object.setRequest_date(requestlist.getRequest_date());
-                   arrayList.add(object);
-               }
-               Toast.makeText(getActivity(), "arralist size "+arrayList.size(), Toast.LENGTH_SHORT).show();
-           }
-
-           @Override
-           public void onFailure(Call<List<requestlistresponse>> call, Throwable t) {
-
-           }
-       });
-    }
 
     private void prepareViewPager(ViewPager viewPager, ArrayList<ModelResponse> arrayList) {
         MainAdapter adapter = new MainAdapter(getChildFragmentManager());
@@ -155,21 +118,21 @@ public class messagesFragment extends Fragment {
         ResponsesFragment fragment = new ResponsesFragment();
         for (int i=0; i<pagenames.size(); i++){
             Bundle bundle = new Bundle();
-            bundle.putParcelableArray("arraylist", arrayList);
+            bundle.putString("request_type", pagenames.get(i));
             fragment.setArguments(bundle);
             adapter.addFragment(fragment, pagenames.get(i));
             fragment = new ResponsesFragment();
-            fragment.REQ = arrayList;
         }
+
         viewPager.setAdapter(adapter);
     }
 
     private class MainAdapter extends FragmentPagerAdapter {
-        ArrayList<String> arrayList = new ArrayList<>();
+        ArrayList<String> arrayListx = new ArrayList<>();
         List<Fragment> fragmentList = new ArrayList<>();
 
         public void addFragment(Fragment fragment, String title){
-            arrayList.add(title);
+            arrayListx.add(title);
             fragmentList.add(fragment);
         }
         public MainAdapter(@NonNull FragmentManager fm) {
@@ -190,7 +153,8 @@ public class messagesFragment extends Fragment {
         @Nullable
         @Override
         public CharSequence getPageTitle(int position) {
-            return arrayList.get(position);
+            return arrayListx.get(position);
         }
+
     }
 }

@@ -7,19 +7,22 @@
     tools:context=".dashboard.messages.messagesFragment">
 
 
-    <com.google.android.material.tabs.TabLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="70dp"
-        android:id="@+id/tab_layout"
-        app:tabTextColor="@color/colorgrey"
-        app:tabIndicatorColor="@color/colorComedyBlue"
-        app:tabSelectedTextColor="@color/colorComedyBlue"
-        android:background="@color/colorWhite"/>
-    
-    
-    <androidx.viewpager.widget.ViewPager
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/view_pager"/>
+        android:layout_height="match_parent">
+        <com.google.android.material.tabs.TabLayout
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:id="@+id/tab_layout"
+            app:tabTextColor="@color/colorgrey"
+            app:tabIndicatorColor="@color/colorComedyBlue"
+            app:tabSelectedTextColor="@color/colorComedyBlue"
+            android:background="@color/colorWhite"/>
+        <androidx.viewpager.widget.ViewPager
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/view_pager"
+            android:layout_below="@id/tab_layout"/>
+    </RelativeLayout>
 
 </FrameLayout>

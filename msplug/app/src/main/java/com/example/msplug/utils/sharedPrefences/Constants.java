@@ -5,4 +5,6 @@ public class Constants {
     public static final String KEY_TOKEN = "token";
     // Used to save state of connecteion
     public static final String IS_CONNECTED = "connected";
+    //used to save the status update state
+    public static final String STATUS = "completed";
 }

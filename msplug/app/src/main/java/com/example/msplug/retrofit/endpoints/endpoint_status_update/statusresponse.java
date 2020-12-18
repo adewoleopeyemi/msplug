@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 
 public class statusresponse {
     @SerializedName("id")
-    private transient int id;
+    private int id;
     @SerializedName("deviceID")
     private String deviceID;
     @SerializedName("name")

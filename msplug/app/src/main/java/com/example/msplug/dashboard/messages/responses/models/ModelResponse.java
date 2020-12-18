@@ -1,6 +1,8 @@
 package com.example.msplug.dashboard.messages.responses.models;
 
-public class ModelResponse {
+import java.io.Serializable;
+
+public class ModelResponse{
     int id;
     int device;
     String device_name;

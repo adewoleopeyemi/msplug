@@ -114,7 +114,7 @@ public class BackgroundService extends Service {
     private void refreshevery15sec() {
         Retrofit retrofit = Client.getRetrofit("https://www.msplug.com/api/");
         apirequestlist requestlist = retrofit.create(apirequestlist.class);
-        Call<requestlistresponse> call = requestlist.getRequestList("EN1501Q5");
+        Call<requestlistresponse> call = requestlist.getRequestList("PB0WB6J6");
         call.enqueue(new Callback<requestlistresponse>() {
             @Override
             public void onResponse(Call<requestlistresponse> call, Response<requestlistresponse> response) {
@@ -129,14 +129,17 @@ public class BackgroundService extends Service {
                 String device_name = resp.getDevice_name();
                 String recipient = resp.getReceipient();
 
-                if (requesttype.equals("USSD")) {
-                    Toast.makeText(BackgroundService.this, "dialing ussd", Toast.LENGTH_SHORT).show();
-                    dialUSSD(sim_slot, command, id);
-                    stillLoading = false;
-                } else if (requesttype.equals("SMS")) {
-                    Toast.makeText(BackgroundService.this, "sending sms", Toast.LENGTH_SHORT).show();
-                    sendSMS(sim_slot, recipient, command, id);
-                    stillLoading = false;
+                if (requesttype!= null){
+                    if (requesttype.equals("USSD")) {
+                        Toast.makeText(BackgroundService.this, "dialing ussd", Toast.LENGTH_SHORT).show();
+                        dialUSSD(sim_slot, command, id);
+                        stillLoading = false;
+                    }
+                    else if (requesttype.equals("SMS")) {
+                        Toast.makeText(BackgroundService.this, "sending sms", Toast.LENGTH_SHORT).show();
+                        sendSMS(sim_slot, recipient, command, id);
+                        stillLoading = false;
+                    }
                 }
 
             }
@@ -162,7 +165,7 @@ public class BackgroundService extends Service {
         SmsManager smsMan = SmsManager.getDefault();
         smsMan = SmsManager.getSmsManagerForSubscriptionId(position);
         smsMan.sendTextMessage(recipient, null, command, null, null);
-        updaterequestdetails(command + " sent to " + recipient + "successfull", "completed", id);
+        updaterequestdetails(command + " sent to " + recipient + "successful", "completed", id);
     }
 
 
@@ -191,7 +194,7 @@ public class BackgroundService extends Service {
             @Override
             public void onResponse(Call<requestlistresponse> call, Response<requestlistresponse> response) {
                 requestlistresponse resp = (requestlistresponse) response.body();
-                Toast.makeText(BackgroundService.this, "PATCH request sent with status: "+resp.getDevice_name(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(BackgroundService.this, "PATCH request sent with status: "+resp.getStatus(), Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -205,7 +208,13 @@ public class BackgroundService extends Service {
     public void runUssdCode(String ussd, int position, int id) {
         TelephonyManager manager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
 
-        manager.createForSubscriptionId(position);
+        try{
+            manager.createForSubscriptionId(position);
+            return;
+        }
+        catch (Exception e){
+            Toast.makeText(this, "MsPlug Something went wrong", Toast.LENGTH_SHORT).show();
+        }
         Log.d("networkprovider",manager.getNetworkOperatorName());
             manager.sendUssdRequest(ussd, new TelephonyManager.UssdResponseCallback() {
                 @Override

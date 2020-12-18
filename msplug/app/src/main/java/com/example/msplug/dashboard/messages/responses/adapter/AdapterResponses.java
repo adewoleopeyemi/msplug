@@ -35,7 +35,8 @@ public class AdapterResponses extends RecyclerView.Adapter<AdapterResponses.Hold
     public void onBindViewHolder(@NonNull Holder holder, int position) {
         holder.date.setText(responses.get(position).getRequest_date());
         holder.responsemessage.setText(responses.get(position).getResponse_message());
-        holder.responseCount.setText(""+position);
+        int pos = position+1;
+        holder.responseCount.setText(""+pos);
         holder.ussd.setText(responses.get(position).getCommand());
     }
 

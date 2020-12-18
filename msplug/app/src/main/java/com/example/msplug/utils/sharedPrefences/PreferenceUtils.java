@@ -39,5 +39,16 @@ public class PreferenceUtils {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getString(Constants.IS_CONNECTED, null);
     }
+    public static boolean saveUpdateStatus(String Status, Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+        prefsEditor.putString(Constants.KEY_TOKEN, Status);
+        prefsEditor.apply();
+        return true;
+    }
 
+    public static String getUpdateStatus(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getString(Constants.KEY_TOKEN, null);
+    }
 }
