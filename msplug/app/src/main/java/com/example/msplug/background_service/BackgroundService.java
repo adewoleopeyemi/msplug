@@ -32,6 +32,7 @@ import com.example.msplug.retrofit.endpoints.endpoint_request_detail.apirequestd
 import com.example.msplug.retrofit.endpoints.endpoint_request_detail.requestdetailsbody;
 import com.example.msplug.retrofit.endpoints.endpoint_request_list.apirequestlist;
 import com.example.msplug.retrofit.endpoints.endpoint_request_list.requestlistresponse;
+import com.example.msplug.utils.sharedPrefences.PreferenceUtils;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -223,6 +224,7 @@ public class BackgroundService extends Service {
                     Log.d("BackgroundService", "onReceiveUssdResponse: "+response.toString());
                     Toast.makeText(BackgroundService.this, ""+response.toString(), Toast.LENGTH_SHORT).show();
                     updaterequestdetails(response.toString(), "completed", id);
+                    PreferenceUtils.saveUpdateStatus("completed", getApplicationContext());
                 }
 
                 @Override
@@ -231,6 +233,7 @@ public class BackgroundService extends Service {
                     updaterequestdetails("request failed "+request.toString(), "failed", id);
                     Log.d(this.getClass().getName(), "response" + failureCode);
                     Toast.makeText(BackgroundService.this, "ussd code run failed "+request, Toast.LENGTH_SHORT).show();
+                    PreferenceUtils.saveUpdateStatus("failed", getApplicationContext());
                 }
             }, new Handler());
         }

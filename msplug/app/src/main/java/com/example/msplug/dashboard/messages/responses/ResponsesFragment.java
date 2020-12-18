@@ -16,9 +16,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.airbnb.lottie.LottieAnimationView;
 import com.example.msplug.R;
 import com.example.msplug.dashboard.messages.responses.adapter.AdapterResponses;
 import com.example.msplug.dashboard.messages.responses.models.ModelResponse;
@@ -43,6 +45,8 @@ public class ResponsesFragment extends Fragment {
     private RecyclerView recyclerView;
     ArrayList<ModelResponse> REQ;
     ProgressDialog pd;
+    RelativeLayout animRel;
+    LottieAnimationView msgloading;
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -92,7 +96,9 @@ public class ResponsesFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_responses, container, false);
         String request_type = getArguments().getString("request_type");
         REQ = new ArrayList<>();
-        pd = new ProgressDialog(getActivity());
+        animRel = view.findViewById(R.id.animRel);
+        msgloading = view.findViewById(R.id.msgloading);
+        msgloading.playAnimation();
         fetchUserRequestList(request_type);
         recyclerView = view.findViewById(R.id.recycler_view);
         //REQ = (ArrayList<ModelResponse>) getArguments().getSerializable("arraylist");
@@ -100,8 +106,6 @@ public class ResponsesFragment extends Fragment {
     }
 
     private void fetchUserRequestList(String request_type) {
-        pd.setMessage("Loading...");
-        pd.show();
         Retrofit retrofit = Client.getRetrofit("https://www.msplug.com/api/");
         apiuserrequestlistbody requestlist = retrofit.create(apiuserrequestlistbody.class);
 
@@ -148,7 +152,7 @@ public class ResponsesFragment extends Fragment {
                 LinearLayoutManager lm = new LinearLayoutManager(getActivity());
                 recyclerView.setLayoutManager(lm);
                 recyclerView.setAdapter(adapterResponses);
-                pd.dismiss();
+                animRel.setVisibility(View.GONE);
             }
 
             @Override

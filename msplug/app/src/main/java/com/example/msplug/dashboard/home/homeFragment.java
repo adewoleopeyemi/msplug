@@ -100,6 +100,7 @@ public class homeFragment extends Fragment {
         toggleBtn = view.findViewById(R.id.toggleBtn);
         dummyAnim = view.findViewById(R.id.dummy_anim);
 
+
         if (PreferenceUtils.getStatus(getActivity()) == "online" ){
             toggleBtn.setChecked(true);
         }
@@ -107,6 +108,7 @@ public class homeFragment extends Fragment {
             toggleBtn.setChecked(false);
         }
         dummyAnim.playAnimation();
+
         toggleBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
