@@ -13,7 +13,8 @@
         android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="1"></FrameLayout>
+        android:layout_weight="1"
+        android:layout_above="@id/CardViewNavigation"></FrameLayout>
 
 
     <RelativeLayout
@@ -52,7 +53,8 @@
         android:elevation="20dp"
         app:cardElevation="20dp"
         android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp">
+        android:layout_marginBottom="10dp"
+        android:id="@+id/CardViewNavigation">
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/navigation"

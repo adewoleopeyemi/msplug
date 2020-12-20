@@ -42,13 +42,26 @@ public class PreferenceUtils {
     public static boolean saveUpdateStatus(String Status, Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor prefsEditor = prefs.edit();
-        prefsEditor.putString(Constants.KEY_TOKEN, Status);
+        prefsEditor.putString(Constants.STATUS, Status);
         prefsEditor.apply();
         return true;
     }
 
     public static String getUpdateStatus(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getString(Constants.KEY_TOKEN, null);
+        return prefs.getString(Constants.STATUS, null);
+    }
+
+    public static boolean saveDeviceID(String device_ID, Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+        prefsEditor.putString(Constants.DEVICE_ID, device_ID);
+        prefsEditor.apply();
+        return true;
+    }
+
+    public static String getDeviceID(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getString(Constants.DEVICE_ID, null);
     }
 }

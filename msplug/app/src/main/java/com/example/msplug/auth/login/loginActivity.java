@@ -31,7 +31,7 @@ import retrofit2.Retrofit;
 
 public class loginActivity extends AppCompatActivity {
     private static final String TAG = "loginActivity";
-    EditText emailID, Password;
+    EditText emailID, Password, deviceID;
     Button btnLogin;
     ProgressDialog pd;
 
@@ -40,7 +40,6 @@ public class loginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (PreferenceUtils.getToken(this) != null ){
-            Toast.makeText(this, "logged in with token "+PreferenceUtils.getToken(this), Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(loginActivity.this, dashboardActivity.class);
             startActivity(intent);
         }else{
@@ -52,22 +51,29 @@ public class loginActivity extends AppCompatActivity {
         }
 
         getSupportActionBar().hide();
-        Intent Dashboard = new Intent(loginActivity.this, dashboardActivity.class);
-        startActivity(Dashboard);
-
         //initialize the views
         emailID = findViewById(R.id.emailTv);
         Password = findViewById(R.id.passwordTv);
         btnLogin = findViewById(R.id.loginBtn);
+        deviceID = findViewById(R.id.deviceIDTv);
         pd = new ProgressDialog(this);
         pd.setMessage("Logging in");
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                pd.show();
                 String email = emailID.getText().toString();
                 String password = Password.getText().toString();
-                if (email.isEmpty()){
+                String device_ID = deviceID.getText().toString();
+                if (password.isEmpty() && email.isEmpty() && device_ID.isEmpty()){
+                    Toast.makeText(loginActivity.this, "Fields are Empty", Toast.LENGTH_SHORT).show();
+                }
+
+                else if (device_ID.isEmpty()){
+                    deviceID.setError("please enter a valid Password");
+                    deviceID.requestFocus();
+                }
+
+                else if (email.isEmpty()){
                     emailID.setError("Please enter Email Address");
                     emailID.requestFocus();
                 }
@@ -75,12 +81,10 @@ public class loginActivity extends AppCompatActivity {
                     Password.setError("please enter a valid Password");
                     Password.requestFocus();
                 }
-                else if (password.isEmpty() && email.isEmpty()){
-                    Toast.makeText(loginActivity.this, "Fields are Empty", Toast.LENGTH_SHORT).show();
-                }
+
                 else {
-                    // Hardcoding device id for now
-                     verifyUser(email, password, "EN1501Q5");
+                     pd.show();
+                     verifyUser(email, password, device_ID);
                 }
             }
         });
@@ -97,15 +101,16 @@ public class loginActivity extends AppCompatActivity {
                 pd.dismiss();
                 loginresponse resp = (loginresponse) response.body();
 
-                Toast.makeText(loginActivity.this, ""+resp.toString(), Toast.LENGTH_SHORT).show();
+                //Toast.makeText(loginActivity.this, ""+resp.toString(), Toast.LENGTH_SHORT).show();
 
                 String respJson = resp.toString();
 
                 JSONObject jsonObject = null;
                 try {
                     jsonObject = new JSONObject(respJson);
+                    String message = jsonObject.getString("message");
                     JSONObject jsonObjectdata = jsonObject.getJSONObject("data");
-
+                    Toast.makeText(loginActivity.this, ""+message, Toast.LENGTH_SHORT).show();
                     if (jsonObjectdata != null){
                         String deviceIDs = jsonObjectdata.getString("deviceID");
                         String token = jsonObjectdata.getString("token");
@@ -115,16 +120,19 @@ public class loginActivity extends AppCompatActivity {
                         if (deviceIDs.equals(deviceID)){
                             if (token != null){
                                 PreferenceUtils.saveToken(token, getApplicationContext());
+                                PreferenceUtils.saveDeviceID(deviceIDs, getApplicationContext());
                                 Log.d(TAG, "token saved: "+ token);
                             }
-                            Toast.makeText(loginActivity.this, "Login Successful"+token, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(loginActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
                             Intent Dashboard = new Intent(loginActivity.this, dashboardActivity.class);
                             startActivity(Dashboard);
                             finish();
                         }
                         else{
-                            Toast.makeText(loginActivity.this, "Login failed please check your credentials", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(loginActivity.this, "Login unsuccessful" , Toast.LENGTH_LONG).show();
                         }
+                    }
+                    else{
                     }
                 } catch (JSONException e) {
                     Log.d(TAG, "xErrorEncountered: "+e.getMessage());
@@ -145,15 +153,5 @@ public class loginActivity extends AppCompatActivity {
     public void onBackPressed() {
         finish();
         super.onBackPressed();
-    }
-
-
-
-    //Function to get the device ID
-    public static String getDeviceId(Context context) {
-        String androidId = Settings.Secure.getString(
-                context.getContentResolver(), Settings.Secure.ANDROID_ID);
-
-        return androidId;
     }
 }

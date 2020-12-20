@@ -34,6 +34,8 @@ import com.example.msplug.retrofit.endpoints.endpoint_request_list.apirequestlis
 import com.example.msplug.retrofit.endpoints.endpoint_request_list.requestlistresponse;
 import com.example.msplug.utils.sharedPrefences.PreferenceUtils;
 
+import java.util.HashMap;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -61,12 +63,13 @@ public class BackgroundService extends Service {
         Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         // Vibrate for 500 milliseconds
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            v.vibrate(VibrationEffect.createOneShot(2000, VibrationEffect.DEFAULT_AMPLITUDE));
+            v.vibrate(VibrationEffect.createOneShot(4000, VibrationEffect.DEFAULT_AMPLITUDE));
         } else {
             //deprecated in API 26
-            v.vibrate(2000);
+            v.vibrate(4000);
         }
         handlerx.removeCallbacks(runnable);
+        //PreferenceUtils.saveStatus("offline", this);
     }
 
     @Override
@@ -115,7 +118,10 @@ public class BackgroundService extends Service {
     private void refreshevery15sec() {
         Retrofit retrofit = Client.getRetrofit("https://www.msplug.com/api/");
         apirequestlist requestlist = retrofit.create(apirequestlist.class);
-        Call<requestlistresponse> call = requestlist.getRequestList("PB0WB6J6");
+        HashMap<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/json");
+        headers.put("Authorization", "Token "+PreferenceUtils.getToken(this));
+        Call<requestlistresponse> call = requestlist.getRequestList(headers, PreferenceUtils.getDeviceID(this));
         call.enqueue(new Callback<requestlistresponse>() {
             @Override
             public void onResponse(Call<requestlistresponse> call, Response<requestlistresponse> response) {
@@ -124,7 +130,6 @@ public class BackgroundService extends Service {
                 String sim_slot = resp.getSim_slot();
                 String command = resp.getCommand();
                 int id = resp.getId();
-                Toast.makeText(BackgroundService.this, "id for patch"+id+ " command: "+command, Toast.LENGTH_SHORT).show();
                 Log.d("BackgroundService", "SCS"+ id);
                 int device = resp.getDevice();
                 String device_name = resp.getDevice_name();
@@ -172,7 +177,6 @@ public class BackgroundService extends Service {
 
     @SuppressLint("MissingPermission")
     private void dialUSSD(String sim_slot, String command, int id) {
-        Toast.makeText(this, "dialer function called", Toast.LENGTH_SHORT).show();
         int position = 0;
         if (sim_slot.equals("sim1")) {
             position = 0;
@@ -188,19 +192,21 @@ public class BackgroundService extends Service {
         Retrofit retrofit = Client.getRetrofit("https://www.msplug.com/api/");
         apirequestdetail requestdetails = retrofit.create(apirequestdetail.class);
         requestdetailsbody body = new requestdetailsbody();
+
         body.setResponse_message(response_message);
         body.setStatus(status);
-        Call<requestlistresponse> call = requestdetails.updateRequestDetails(requestID, body);
+        HashMap<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/json");
+        headers.put("Authorization", "Token "+PreferenceUtils.getToken(this));
+        Call<requestlistresponse> call = requestdetails.updateRequestDetails(headers, requestID, body);
         call.enqueue(new Callback<requestlistresponse>() {
             @Override
             public void onResponse(Call<requestlistresponse> call, Response<requestlistresponse> response) {
                 requestlistresponse resp = (requestlistresponse) response.body();
-                Toast.makeText(BackgroundService.this, "PATCH request sent with status: "+resp.getStatus(), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onFailure(Call<requestlistresponse> call, Throwable t) {
-                Toast.makeText(BackgroundService.this, ""+t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -214,7 +220,6 @@ public class BackgroundService extends Service {
             return;
         }
         catch (Exception e){
-            Toast.makeText(this, "MsPlug Something went wrong", Toast.LENGTH_SHORT).show();
         }
         Log.d("networkprovider",manager.getNetworkOperatorName());
             manager.sendUssdRequest(ussd, new TelephonyManager.UssdResponseCallback() {
@@ -222,7 +227,6 @@ public class BackgroundService extends Service {
                 public void onReceiveUssdResponse(TelephonyManager telephonyManager, String request, CharSequence response) {
                     super.onReceiveUssdResponse(telephonyManager, request, response);
                     Log.d("BackgroundService", "onReceiveUssdResponse: "+response.toString());
-                    Toast.makeText(BackgroundService.this, ""+response.toString(), Toast.LENGTH_SHORT).show();
                     updaterequestdetails(response.toString(), "completed", id);
                     PreferenceUtils.saveUpdateStatus("completed", getApplicationContext());
                 }
@@ -232,7 +236,6 @@ public class BackgroundService extends Service {
                     super.onReceiveUssdResponseFailed(telephonyManager, request, failureCode);
                     updaterequestdetails("request failed "+request.toString(), "failed", id);
                     Log.d(this.getClass().getName(), "response" + failureCode);
-                    Toast.makeText(BackgroundService.this, "ussd code run failed "+request, Toast.LENGTH_SHORT).show();
                     PreferenceUtils.saveUpdateStatus("failed", getApplicationContext());
                 }
             }, new Handler());

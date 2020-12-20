@@ -46,22 +46,51 @@
             android:background="@drawable/rounded_corner_top">
 
 
-
             <ImageView
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:src="@drawable/ic_mail"
+                android:src="@drawable/ic_device_id"
                 android:layout_marginTop="60dp"
                 android:layout_marginLeft="30dp"/>
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="310dp"
+            android:layout_height="60dp"
+            android:id="@+id/deviceIdTl"
+            android:layout_marginTop="40dp"
+            android:layout_marginLeft="70dp"
+            android:layout_marginRight="30dp"
+            android:layout_marginBottom="@dimen/margin_medium"
+            android:textColorHint="@color/colorComedyBlue">
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="Device ID"
+                android:textSize="15sp"
+                android:padding="5dp"
+                android:id="@+id/deviceIDTv"
+                android:textColorHint="@color/colorComedyBlue"
+                android:textColor="@color/colorComedyBlue"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_mail"
+            android:layout_marginTop="30dp"
+            android:layout_marginLeft="30dp"
+            android:layout_below="@id/deviceIdTl"/>
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="310dp"
                 android:layout_height="60dp"
                 android:id="@+id/emailTl"
-                android:layout_marginTop="40dp"
                 android:layout_marginLeft="70dp"
                 android:layout_marginRight="30dp"
                 android:layout_marginBottom="@dimen/margin_medium"
-                android:textColorHint="@color/colorComedyBlue">
+                android:textColorHint="@color/colorComedyBlue"
+                android:layout_below="@id/deviceIdTl">
 
                 <EditText
                     android:layout_width="match_parent"
@@ -112,7 +141,6 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/passwordTl"
                 android:layout_marginTop="30dp"
-                app:cardElevation="@dimen/elevation_medium"
                 app:cardCornerRadius="5dp"
                 android:layout_centerHorizontal="true">
 1

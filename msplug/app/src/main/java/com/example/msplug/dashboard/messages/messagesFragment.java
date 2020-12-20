@@ -1,6 +1,5 @@
 package com.example.msplug.dashboard.messages;
 
-import android.graphics.ColorSpace;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -10,38 +9,17 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-import android.os.Parcel;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.example.msplug.R;
 import com.example.msplug.dashboard.messages.responses.ResponsesFragment;
 import com.example.msplug.dashboard.messages.responses.models.ModelResponse;
-import com.example.msplug.retrofit.client.Client;
-import com.example.msplug.retrofit.endpoints.endpoint_login.apistatusupdate;
-import com.example.msplug.retrofit.endpoints.endpoint_request_list.requestlistresponse;
-import com.example.msplug.retrofit.endpoints.endpoint_status_update.statusbody;
-import com.example.msplug.retrofit.endpoints.endpoint_status_update.statusresponse;
-import com.example.msplug.retrofit.endpoints.endpoint_user_request_list.apiuserrequestlistbody;
-import com.example.msplug.retrofit.endpoints.endpoint_user_request_list.userrequestlistbody;
 import com.google.android.material.tabs.TabLayout;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
 
 /**
  * A simple {@link Fragment} subclass.

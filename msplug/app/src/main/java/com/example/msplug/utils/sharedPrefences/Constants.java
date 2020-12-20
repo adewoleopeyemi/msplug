@@ -7,4 +7,6 @@ public class Constants {
     public static final String IS_CONNECTED = "connected";
     //used to save the status update state
     public static final String STATUS = "completed";
+    //used to save device ID;
+    public static final String DEVICE_ID = "";
 }

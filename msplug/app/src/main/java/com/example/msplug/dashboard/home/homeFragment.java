@@ -1,31 +1,41 @@
 package com.example.msplug.dashboard.home;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
-import android.widget.Switch;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.example.msplug.R;
+import com.example.msplug.auth.login.loginActivity;
 import com.example.msplug.background_service.BackgroundService;
 import com.example.msplug.retrofit.client.Client;
-import com.example.msplug.retrofit.endpoints.endpoint_login.apistatusupdate;
+import com.example.msplug.retrofit.endpoints.endpoint_status_update.apistatusupdate;
 import com.example.msplug.retrofit.endpoints.endpoint_status_update.statusbody;
 import com.example.msplug.retrofit.endpoints.endpoint_status_update.statusresponse;
 import com.example.msplug.utils.sharedPrefences.PreferenceUtils;
+
+import java.util.HashMap;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -42,10 +52,15 @@ import static com.example.msplug.utils.Constants.serviceStatusConstants.ONLINE_S
 public class homeFragment extends Fragment {
     //Variable used to check the state of toggle button
     private boolean service_off = true;
-    private Switch toggleBtn;
+    private SwitchCompat toggleBtn;
     private LottieAnimationView dummyAnim;
     private static final int REQUEST_PHONE_CALL = 1;
+    ImageView logout;
 
+    ConnectivityManager cm;
+    Boolean stopped;
+    Boolean started;
+    Boolean permToStart = true;
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -78,6 +93,12 @@ public class homeFragment extends Fragment {
     }
 
     @Override
+    public void onStart() {
+        cm = (ConnectivityManager)getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        super.onStart();
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
@@ -97,11 +118,39 @@ public class homeFragment extends Fragment {
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.SEND_SMS},1);
         }
         View view = inflater.inflate(R.layout.fragment_home, container, false);
+        stopped = false;
+        started = false;
         toggleBtn = view.findViewById(R.id.toggleBtn);
         dummyAnim = view.findViewById(R.id.dummy_anim);
+        logout = view.findViewById(R.id.logoutIv);
+
+        logout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(getContext());
+                alertDialog.setMessage("Do you want to logout?");
+                alertDialog.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //Deletes token
+                        PreferenceUtils.saveToken(null, getContext());
+                        Intent i = new Intent(getActivity(), loginActivity.class);
+                        startActivity(i);
+                    }
+                }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                alertDialog.show();
+            }
 
 
-        if (PreferenceUtils.getStatus(getActivity()) == "online" ){
+        });
+
+
+        if (PreferenceUtils.getStatus(getActivity())!= null && PreferenceUtils.getStatus(getActivity()).equals("online")){
             toggleBtn.setChecked(true);
         }
         else{
@@ -114,13 +163,43 @@ public class homeFragment extends Fragment {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked){
                     service_off = false;
-                    startBackgroundService("Connected");
-                    PreferenceUtils.saveStatus("online", getContext());
+                    permToStart = true;
+                    Handler handler = new Handler();
+                    Runnable periodicUpdate = new Runnable() {
+                            @Override
+                            public void run() {
+                                NetworkInfo ni = cm.getActiveNetworkInfo();
+                                if (ni != null && ni.isConnectedOrConnecting() && permToStart){
+                                    if (!started){
+                                        startBackgroundService("Connected");
+                                        started = true;
+                                        stopped = false;
+                                    }
+                                }
+                                else{
+                                    if (!stopped){
+                                        stopBackgroundService("Disconneted", false);
+                                        stopped = true;
+                                        started = false;
+                                        permToStart = true;
+                                    }
+                                }
+                                handler.postDelayed(this, 1000);
+                            }
+
+                        };
+                        periodicUpdate.run();
+
+                        PreferenceUtils.saveStatus("online", getContext());
+
                 }
-                else{
+                else if (!isChecked){
                     service_off = true;
-                    stopBackgroundService("Disconnected");
+                    stopBackgroundService("Disconnected", true);
                     PreferenceUtils.saveStatus("offline", getContext());
+                    stopped = true;
+                    started = false;
+                    permToStart = false;
                 }
             }
         });
@@ -135,20 +214,17 @@ public class homeFragment extends Fragment {
         statusbody statusbody = new statusbody();
         statusbody.setStatus(status);
 
-        Call<statusresponse> call = statusUpdate.updateStatus("PB0WB6J6",statusbody);
+
+        HashMap<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/json");
+        headers.put("Authorization", "Token "+PreferenceUtils.getToken(getContext()));
+
+        Call<statusresponse> call = statusUpdate.updateStatus(headers, PreferenceUtils.getDeviceID(getContext()),statusbody);
         call.enqueue(new Callback<statusresponse>() {
             @Override
             public void onResponse(Call<statusresponse> call, Response<statusresponse> response) {
                 statusresponse resp = (statusresponse) response.body();
                 String respJson = resp.toString();
-                if (status.equals("offline")){
-                    Toast.makeText(getActivity(), "Device disconnected", Toast.LENGTH_SHORT).show();
-                }
-                else{
-                    Toast.makeText(getActivity(), "Connected with "+resp.getName(), Toast.LENGTH_SHORT).show();
-                }
-
-                Log.d("Home Fragment", "onResponse: "+resp.getName());
             }
 
             @Override
@@ -166,12 +242,22 @@ public class homeFragment extends Fragment {
     }
 
 
-    private void stopBackgroundService(String status) {
+    private void stopBackgroundService(String status, boolean stopService) {
         updateStatus("offline");
         Intent serviceIntent = new Intent(getActivity(), BackgroundService.class);
+        if (!stopService){
+            getActivity().stopService(serviceIntent);
+            serviceIntent = new Intent(getActivity(), BackgroundService.class);
+            serviceIntent.putExtra(ONLINE_STATUS, status);
+            ContextCompat.startForegroundService(getActivity(), serviceIntent);
+
+        }
+        else if (stopService){
+            getActivity().stopService(serviceIntent);
+        }
+
         //ContextCompat.stopForegroundService(getActivity(), serviceIntent);
-        getActivity().stopService(serviceIntent);
-        Toast.makeText(getActivity(), "device disconnected", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getActivity(), "device disconnected", Toast.LENGTH_SHORT).show();
     }
 
     private void startBackgroundService(String status) {

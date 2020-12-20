@@ -27,14 +27,18 @@ import com.example.msplug.dashboard.messages.responses.models.ModelResponse;
 import com.example.msplug.retrofit.client.Client;
 import com.example.msplug.retrofit.endpoints.endpoint_request_list.requestlistresponse;
 import com.example.msplug.retrofit.endpoints.endpoint_user_request_list.apiuserrequestlistbody;
+import com.example.msplug.utils.sharedPrefences.PreferenceUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+import retrofit2.http.HeaderMap;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -109,8 +113,10 @@ public class ResponsesFragment extends Fragment {
         Retrofit retrofit = Client.getRetrofit("https://www.msplug.com/api/");
         apiuserrequestlistbody requestlist = retrofit.create(apiuserrequestlistbody.class);
 
-        Call<List<requestlistresponse>> call = requestlist.getRequestList("EN1501Q5");
-        Toast.makeText(getActivity(), "reached fetch response", Toast.LENGTH_SHORT).show();
+        HashMap<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/json");
+        headers.put("Authorization", "Token "+PreferenceUtils.getToken(getContext()));
+        Call<List<requestlistresponse>> call = requestlist.getRequestList(headers, PreferenceUtils.getDeviceID(getActivity()));
         call.enqueue(new Callback<List<requestlistresponse>>() {
             @Override
             public void onResponse(Call<List<requestlistresponse>> call, Response<List<requestlistresponse>> response) {
@@ -145,7 +151,6 @@ public class ResponsesFragment extends Fragment {
                         object.setRequest_date(requestlist.getRequest_date());
                         REQ.add(object);
                     }
-                    Log.d("MessgaeFragment", "onResponse: "+resp);
                 }
                 AdapterResponses adapterResponses = new AdapterResponses(getActivity(), REQ);
                 //Toast.makeText(mActivity, "From response fragment"+response.get(0).getResponse_message(), Toast.LENGTH_SHORT).show();
