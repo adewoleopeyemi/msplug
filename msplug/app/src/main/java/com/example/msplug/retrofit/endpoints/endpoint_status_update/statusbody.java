@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 
 public class statusbody {
     @SerializedName("status")
-    private transient String status;
+    private String status;
 
     public String getStatus() {
         return status;

@@ -2,12 +2,16 @@ package com.example.msplug.dashboard.view;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -33,7 +37,9 @@ public class dashboardActivity extends AppCompatActivity implements Connectivity
     public static final String BroadcastStringForAction = "checkinternet";
     IntentFilter mIntentFilter;
     RelativeLayout noInternetRelLayout;
+    private static final int REQ_CODE = 1;
 
+    @SuppressLint("NewApi")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,6 +77,17 @@ public class dashboardActivity extends AppCompatActivity implements Connectivity
         };
         periodicUpdate.run();
 
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            //request permission if its not granted already
+
+            requestPermissions(new String[]{Manifest.permission.READ_PHONE_STATE},REQ_CODE);
+        }
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.FOREGROUND_SERVICE) != PackageManager.PERMISSION_GRANTED) {
+            //request permission if its not granted already
+
+            requestPermissions(new String[]{Manifest.permission.FOREGROUND_SERVICE},REQ_CODE);
+        }
 
         BottomNavigationView navigationView = (BottomNavigationView) findViewById(R.id.navigation);
         navigationView.setOnNavigationItemSelectedListener(selectedListener);

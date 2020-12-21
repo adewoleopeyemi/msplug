@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="110dp"
+    android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     app:cardCornerRadius="5dp"
     android:layout_margin="5dp"
@@ -30,20 +30,22 @@
             android:id="@+id/responsemessage"
             android:text="Main Balance"/>
         <androidx.cardview.widget.CardView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:background="@color/colorComedyBlue"
             android:layout_below="@id/responsemessage"
             android:layout_marginTop="10dp"
             android:layout_marginLeft="10dp"
             app:cardCornerRadius="15dp"
-            android:id="@+id/cardViewResponseCount">
+            android:id="@+id/cardViewResponseCount"
+            android:layout_marginBottom="20dp">
             
             <RelativeLayout
             android:layout_width="30dp"
             android:layout_height="30dp"
             android:layout_below="@id/responsemessage"
-            android:background="@color/colorComedyBlue"/>
+            android:background="@color/colorComedyBlue" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

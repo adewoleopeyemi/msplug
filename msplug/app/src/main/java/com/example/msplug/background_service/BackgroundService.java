@@ -17,6 +17,8 @@ import android.os.Message;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.telephony.SmsManager;
+import android.telephony.SubscriptionInfo;
+import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -34,7 +36,10 @@ import com.example.msplug.retrofit.endpoints.endpoint_request_list.apirequestlis
 import com.example.msplug.retrofit.endpoints.endpoint_request_list.requestlistresponse;
 import com.example.msplug.utils.sharedPrefences.PreferenceUtils;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -50,7 +55,8 @@ public class BackgroundService extends Service {
     boolean stillLoading;
     Runnable runnable;
     Handler handlerx;
-
+    TelephonyManager manager;
+    TelephonyManager.UssdResponseCallback ussdResponseCallback;
 
     @Override
     public void onCreate() {
@@ -69,6 +75,7 @@ public class BackgroundService extends Service {
             v.vibrate(4000);
         }
         handlerx.removeCallbacks(runnable);
+        Toast.makeText(this, "bservice stopped", Toast.LENGTH_SHORT).show();
         //PreferenceUtils.saveStatus("offline", this);
     }
 
@@ -99,7 +106,7 @@ public class BackgroundService extends Service {
         startForeground(1, notification);
 
         handlerx = new Handler();
-        final int delay = 20000; // 1000 milliseconds == 1 second
+        final int delay = 15000; // 1000 milliseconds == 1 second
 
 
         stillLoading = true;
@@ -137,12 +144,12 @@ public class BackgroundService extends Service {
 
                 if (requesttype!= null){
                     if (requesttype.equals("USSD")) {
-                        Toast.makeText(BackgroundService.this, "dialing ussd", Toast.LENGTH_SHORT).show();
+                       // Toast.makeText(BackgroundService.this, "dialing ussd "+command+ "request id: "+id, Toast.LENGTH_LONG).show();
                         dialUSSD(sim_slot, command, id);
                         stillLoading = false;
                     }
                     else if (requesttype.equals("SMS")) {
-                        Toast.makeText(BackgroundService.this, "sending sms", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(BackgroundService.this, "sending sms", Toast.LENGTH_LONG).show();
                         sendSMS(sim_slot, recipient, command, id);
                         stillLoading = false;
                     }
@@ -161,34 +168,50 @@ public class BackgroundService extends Service {
 
     @SuppressLint("NewApi")
     private void sendSMS(String sim_slot, String recipient, String command, int id) {
-        int position = 0;
+        int position = 1;
         if (sim_slot.equals("sim1")) {
-            position = 0;
-        } else if (sim_slot.equals("sim2")) {
             position = 1;
+        } else if (sim_slot.equals("sim2")) {
+            position = 2;
         }
 
         SmsManager smsMan = SmsManager.getDefault();
-        smsMan = SmsManager.getSmsManagerForSubscriptionId(position);
-        smsMan.sendTextMessage(recipient, null, command, null, null);
+        SmsManager.getSmsManagerForSubscriptionId(position).sendTextMessage(recipient, null, command, null, null);;
+        //smsMan.sendTextMessage(recipient, null, command, null, null);
         updaterequestdetails(command + " sent to " + recipient + "successful", "completed", id);
     }
 
 
-    @SuppressLint("MissingPermission")
+    @SuppressLint({"MissingPermission","NewApi", "LocalSuppress"})
     private void dialUSSD(String sim_slot, String command, int id) {
-        int position = 0;
-        if (sim_slot.equals("sim1")) {
-            position = 0;
-        } else if (sim_slot.equals("sim2")) {
-            position = 1;
+        Toast.makeText(this, "dialUSSD fubc called", Toast.LENGTH_SHORT).show();
+        List<SubscriptionInfo> subscriptionInfos = SubscriptionManager.from(getApplicationContext()).getActiveSubscriptionInfoList();
+
+        for (SubscriptionInfo subscriptionInfo : subscriptionInfos) {
+            int subscriptionId = subscriptionInfo.getSubscriptionId();
+            Toast.makeText(this, "subscriptionId:" + subscriptionId, Toast.LENGTH_SHORT).show();
+            Log.d("Sims", "subscriptionId:" + subscriptionId);
         }
-        runUssdCode(command, position, id);
+        int sim1 = subscriptionInfos.get(0).getSubscriptionId();
+        int sim2 = subscriptionInfos.get(1).getSubscriptionId();
+        if (sim_slot.equals("sim1")) {
+            Toast.makeText(this, "sim 1 positon selected", Toast.LENGTH_SHORT).show();
+            int position = sim1;
+            Toast.makeText(BackgroundService.this, "dialing ussd "+command+ "request id: "+id, Toast.LENGTH_LONG).show();
+            runUssdCode(command, position, id);
+        } else if (sim_slot.equals("sim2")) {
+            Toast.makeText(this, "sim 2 positon selected", Toast.LENGTH_SHORT).show();
+            int position = sim2;
+            Toast.makeText(BackgroundService.this, "dialing ussd "+command+ "request id: "+id, Toast.LENGTH_LONG).show();
+            runUssdCode(command, position, id);
+        }
+
     }
 
 
     //Comenack here and remove toast message for oResponse
     private void updaterequestdetails(String response_message, String status, int requestID){
+        //Toast.makeText(this, "update request details called", Toast.LENGTH_LONG).show();
         Retrofit retrofit = Client.getRetrofit("https://www.msplug.com/api/");
         apirequestdetail requestdetails = retrofit.create(apirequestdetail.class);
         requestdetailsbody body = new requestdetailsbody();
@@ -203,43 +226,72 @@ public class BackgroundService extends Service {
             @Override
             public void onResponse(Call<requestlistresponse> call, Response<requestlistresponse> response) {
                 requestlistresponse resp = (requestlistresponse) response.body();
+                Toast.makeText(BackgroundService.this, "Status after dialing "+resp.getStatus() + " with device: "+resp.getDevice_name(), Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onFailure(Call<requestlistresponse> call, Throwable t) {
+                Toast.makeText(BackgroundService.this, "failed to update status "+t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    @SuppressLint({"MissingPermission", "NewApi"})
+    @SuppressLint({"NewApi", "MissingPermission"})
     public void runUssdCode(String ussd, int position, int id) {
-        TelephonyManager manager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        manager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
 
-        try{
-            manager.createForSubscriptionId(position);
-            return;
-        }
-        catch (Exception e){
-        }
-        Log.d("networkprovider",manager.getNetworkOperatorName());
-            manager.sendUssdRequest(ussd, new TelephonyManager.UssdResponseCallback() {
-                @Override
-                public void onReceiveUssdResponse(TelephonyManager telephonyManager, String request, CharSequence response) {
-                    super.onReceiveUssdResponse(telephonyManager, request, response);
-                    Log.d("BackgroundService", "onReceiveUssdResponse: "+response.toString());
-                    updaterequestdetails(response.toString(), "completed", id);
-                    PreferenceUtils.saveUpdateStatus("completed", getApplicationContext());
-                }
+        Toast.makeText(this, "dialer function called", Toast.LENGTH_SHORT).show();
+        //TelephonyManager manager2 = manager.createForSubscriptionId(position);
+        final Handler handler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                super.handleMessage(msg); //no need to change anything here
+            }
+        };
+        ussdResponseCallback = new TelephonyManager.UssdResponseCallback() {
+            @Override
+            public void onReceiveUssdResponse(TelephonyManager telephonyManager, String request, CharSequence response) {
+                //if our request is successful then we get response here
+                Log.d("BackgroundService", "onReceiveUssdResponse: "+response.toString());
+                updaterequestdetails(response.toString(), "completed", id);
+                Toast.makeText(BackgroundService.this, "passed update request details "+response.toString(), Toast.LENGTH_SHORT).show();
+                PreferenceUtils.saveUpdateStatus("completed", getApplicationContext());
+            }
 
-                @Override
-                public void onReceiveUssdResponseFailed(TelephonyManager telephonyManager, String request, int failureCode) {
-                    super.onReceiveUssdResponseFailed(telephonyManager, request, failureCode);
-                    updaterequestdetails("request failed "+request.toString(), "failed", id);
-                    Log.d(this.getClass().getName(), "response" + failureCode);
-                    PreferenceUtils.saveUpdateStatus("failed", getApplicationContext());
-                }
-            }, new Handler());
-        }
+            @Override
+            public void onReceiveUssdResponseFailed(TelephonyManager telephonyManager, String request, int failureCode) {
+
+                //request failures will be catched here
+
+                updaterequestdetails("request failed "+request.toString(), "failed", id);
+                Toast.makeText(BackgroundService.this, "passed update request details "+request.toString(), Toast.LENGTH_SHORT).show();
+                Log.d(this.getClass().getName(), "response" + failureCode);
+                PreferenceUtils.saveUpdateStatus("failed", getApplicationContext());
+
+                //here failure reasons are in the form of failure codes
+            }
+        };
+        manager.createForSubscriptionId(position).sendUssdRequest(ussd
+                ,ussdResponseCallback,handler);
+        /**manager2.sendUssdRequest(ussd, new TelephonyManager.UssdResponseCallback() {
+            @Override
+            public void onReceiveUssdResponse(TelephonyManager telephonyManager, String request, CharSequence response) {
+                super.onReceiveUssdResponse(telephonyManager, request, response);
+                Log.d("BackgroundService", "onReceiveUssdResponse: "+response.toString());
+                updaterequestdetails(response.toString(), "completed", id);
+                Toast.makeText(BackgroundService.this, "passed update request details "+response.toString(), Toast.LENGTH_SHORT).show();
+                PreferenceUtils.saveUpdateStatus("completed", getApplicationContext());
+            }
+            @Override
+            public void onReceiveUssdResponseFailed(TelephonyManager telephonyManager, String request, int failureCode) {
+                super.onReceiveUssdResponseFailed(telephonyManager, request, failureCode);
+                updaterequestdetails("request failed "+request.toString(), "failed", id);
+                Toast.makeText(BackgroundService.this, "passed update request details "+request.toString(), Toast.LENGTH_SHORT).show();
+                Log.d(this.getClass().getName(), "response" + failureCode);
+                PreferenceUtils.saveUpdateStatus("failed", getApplicationContext());
+            }
+            }, new Handler());**/
+    }
 
     @Nullable
     @Override

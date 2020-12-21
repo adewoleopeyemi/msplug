@@ -134,6 +134,8 @@ public class homeFragment extends Fragment {
                     public void onClick(DialogInterface dialog, int which) {
                         //Deletes token
                         PreferenceUtils.saveToken(null, getContext());
+                        PreferenceUtils.saveDeviceID(null, getContext());
+                        stopBackgroundService("offline", true);
                         Intent i = new Intent(getActivity(), loginActivity.class);
                         startActivity(i);
                     }

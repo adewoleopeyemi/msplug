@@ -40,6 +40,7 @@ public class loginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (PreferenceUtils.getToken(this) != null ){
+            Toast.makeText(this, "Token: "+PreferenceUtils.getToken(this)+ "Device ID: "+PreferenceUtils.getDeviceID(this), Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(loginActivity.this, dashboardActivity.class);
             startActivity(intent);
         }else{
@@ -65,7 +66,7 @@ public class loginActivity extends AppCompatActivity {
                 String password = Password.getText().toString();
                 String device_ID = deviceID.getText().toString();
                 if (password.isEmpty() && email.isEmpty() && device_ID.isEmpty()){
-                    Toast.makeText(loginActivity.this, "Fields are Empty", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(loginActivity.this, "Fields are Empty", Toast.LENGTH_LONG).show();
                 }
 
                 else if (device_ID.isEmpty()){
