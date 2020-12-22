@@ -38,6 +38,8 @@ public class dashboardActivity extends AppCompatActivity implements Connectivity
     IntentFilter mIntentFilter;
     RelativeLayout noInternetRelLayout;
     private static final int REQ_CODE = 1;
+    String frag_to_start;
+    String request_type;
 
     @SuppressLint("NewApi")
     @Override
@@ -52,6 +54,9 @@ public class dashboardActivity extends AppCompatActivity implements Connectivity
         mIntentFilter.addAction(BroadcastStringForAction);
         Intent service = new Intent(this, InternetConnectionService.class);
         startService(service);
+        frag_to_start = getIntent().getStringExtra("frag_to_start");
+        request_type = getIntent().getStringExtra("request_type");
+
 
 
         noInternetRelLayout = findViewById(R.id.noInternetRelLayout);
@@ -92,10 +97,21 @@ public class dashboardActivity extends AppCompatActivity implements Connectivity
         BottomNavigationView navigationView = (BottomNavigationView) findViewById(R.id.navigation);
         navigationView.setOnNavigationItemSelectedListener(selectedListener);
 
-        homeFragment fragment1 = new homeFragment();
-        FragmentTransaction ft1 = getSupportFragmentManager().beginTransaction();
-        ft1.replace(R.id.content, fragment1, "");
-        ft1.commit();
+        if (frag_to_start != null && frag_to_start.equals("messages")){
+            messagesFragment fragment1 = new messagesFragment();
+            Bundle bundle = new Bundle();
+            bundle.putString("request_type", request_type);
+            FragmentTransaction ft1 = getSupportFragmentManager().beginTransaction();
+            fragment1.setArguments(bundle);
+            ft1.replace(R.id.content, fragment1, "");
+            ft1.commit();
+        }
+        else{
+            homeFragment fragment1 = new homeFragment();
+            FragmentTransaction ft1 = getSupportFragmentManager().beginTransaction();
+            ft1.replace(R.id.content, fragment1, "");
+            ft1.commit();
+        }
     }
 
 

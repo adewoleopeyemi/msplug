@@ -64,4 +64,17 @@ public class PreferenceUtils {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getString(Constants.DEVICE_ID, null);
     }
+
+    public static boolean saveDeviceName(String device_Name, Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+        prefsEditor.putString(Constants.DEVICE_NAME, device_Name);
+        prefsEditor.apply();
+        return true;
+    }
+
+    public static String getDeviceName(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getString(Constants.DEVICE_NAME, null);
+    }
 }

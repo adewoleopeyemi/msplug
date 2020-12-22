@@ -40,7 +40,6 @@ public class loginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (PreferenceUtils.getToken(this) != null ){
-            Toast.makeText(this, "Token: "+PreferenceUtils.getToken(this)+ "Device ID: "+PreferenceUtils.getDeviceID(this), Toast.LENGTH_SHORT).show();
             Intent intent = new Intent(loginActivity.this, dashboardActivity.class);
             startActivity(intent);
         }else{
@@ -102,8 +101,6 @@ public class loginActivity extends AppCompatActivity {
                 pd.dismiss();
                 loginresponse resp = (loginresponse) response.body();
 
-                //Toast.makeText(loginActivity.this, ""+resp.toString(), Toast.LENGTH_SHORT).show();
-
                 String respJson = resp.toString();
 
                 JSONObject jsonObject = null;
@@ -122,7 +119,6 @@ public class loginActivity extends AppCompatActivity {
                             if (token != null){
                                 PreferenceUtils.saveToken(token, getApplicationContext());
                                 PreferenceUtils.saveDeviceID(deviceIDs, getApplicationContext());
-                                Log.d(TAG, "token saved: "+ token);
                             }
                             Toast.makeText(loginActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
                             Intent Dashboard = new Intent(loginActivity.this, dashboardActivity.class);
@@ -136,7 +132,6 @@ public class loginActivity extends AppCompatActivity {
                     else{
                     }
                 } catch (JSONException e) {
-                    Log.d(TAG, "xErrorEncountered: "+e.getMessage());
                     e.printStackTrace();
                 }
 

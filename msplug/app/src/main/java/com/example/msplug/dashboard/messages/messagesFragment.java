@@ -31,6 +31,7 @@ public class messagesFragment extends Fragment {
     TabLayout tabLayout;
     ViewPager viewPager;
     ArrayList<ModelResponse> arrayList;
+    String req;
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -79,9 +80,12 @@ public class messagesFragment extends Fragment {
         tabLayout = view.findViewById(R.id.tab_layout);
         viewPager = view.findViewById(R.id.view_pager);
         arrayList = new ArrayList<>();
-        ArrayList<String> pagenames = new ArrayList<>();
-        pagenames.add("USSD response");
-        pagenames.add("SMS response");
+        Bundle args = getArguments();
+        if (args!=null){
+            req = args.getString("request_type");
+        }
+
+
         prepareViewPager(viewPager, arrayList);
         tabLayout.setupWithViewPager(viewPager);
         return view;
@@ -91,8 +95,21 @@ public class messagesFragment extends Fragment {
     private void prepareViewPager(ViewPager viewPager, ArrayList<ModelResponse> arrayList) {
         MainAdapter adapter = new MainAdapter(getChildFragmentManager());
         ArrayList<String> pagenames = new ArrayList<>();
-        pagenames.add("USSD response");
-        pagenames.add("SMS response");
+        if (req != null){
+            if (req.equals("SMS")){
+                pagenames.add("SMS response");
+                pagenames.add("USSD response");
+            }
+            else{
+                pagenames.add("USSD response");
+                pagenames.add("SMS response");
+            }
+        }
+        else{
+            pagenames.add("USSD response");
+            pagenames.add("SMS response");
+        }
+
         ResponsesFragment fragment = new ResponsesFragment();
         for (int i=0; i<pagenames.size(); i++){
             Bundle bundle = new Bundle();

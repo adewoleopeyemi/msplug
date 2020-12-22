@@ -9,4 +9,7 @@ public class Constants {
     public static final String STATUS = "completed";
     //used to save device ID;
     public static final String DEVICE_ID = "";
+    //used to save device name;
+    public static final String DEVICE_NAME = "";
+
 }

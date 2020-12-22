@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -51,6 +52,7 @@ public class ResponsesFragment extends Fragment {
     ProgressDialog pd;
     RelativeLayout animRel;
     LottieAnimationView msgloading;
+    SwipeRefreshLayout swipeRefreshLayout;
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -102,10 +104,18 @@ public class ResponsesFragment extends Fragment {
         REQ = new ArrayList<>();
         animRel = view.findViewById(R.id.animRel);
         msgloading = view.findViewById(R.id.msgloading);
+        swipeRefreshLayout = view.findViewById(R.id.swipeToRefresh);
+        swipeRefreshLayout.setColorSchemeColors(getResources().getColor(R.color.colorComedyBlue));
         msgloading.playAnimation();
         fetchUserRequestList(request_type);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                fetchUserRequestList(request_type);
+                swipeRefreshLayout.setRefreshing(false);
+            }
+        });
         recyclerView = view.findViewById(R.id.recycler_view);
-        //REQ = (ArrayList<ModelResponse>) getArguments().getSerializable("arraylist");
         return view;
     }
 
@@ -121,7 +131,6 @@ public class ResponsesFragment extends Fragment {
             @Override
             public void onResponse(Call<List<requestlistresponse>> call, Response<List<requestlistresponse>> response) {
                 List<requestlistresponse> resp = response.body();
-                Log.d("XmessagesFragment", "XonResponse: "+response.body() + " "+response.message());
 
                 for (int i=0; i<resp.size(); i++){
                     requestlistresponse requestlist = resp.get(i);
@@ -153,8 +162,8 @@ public class ResponsesFragment extends Fragment {
                     }
                 }
                 AdapterResponses adapterResponses = new AdapterResponses(getActivity(), REQ);
-                //Toast.makeText(mActivity, "From response fragment"+response.get(0).getResponse_message(), Toast.LENGTH_SHORT).show();
                 LinearLayoutManager lm = new LinearLayoutManager(getActivity());
+                adapterResponses.notifyDataSetChanged();
                 recyclerView.setLayoutManager(lm);
                 recyclerView.setAdapter(adapterResponses);
                 animRel.setVisibility(View.GONE);
