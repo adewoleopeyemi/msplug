@@ -190,7 +190,14 @@ public class BackgroundService extends Service {
             Log.d("Sims", "subscriptionId:" + subscriptionId);
         }
         int sim1 = subscriptionInfos.get(0).getSubscriptionId();
-        int sim2 = subscriptionInfos.get(1).getSubscriptionId();
+        int sim2;
+        try{
+            sim2 = subscriptionInfos.get(1).getSubscriptionId();
+        }
+        catch (Exception e){
+            sim2 = subscriptionInfos.get(0).getSubscriptionId();
+        }
+
         if (sim_slot.equals("sim1")) {
             int position = sim1;
             runUssdCode(command, position, id);
@@ -198,6 +205,7 @@ public class BackgroundService extends Service {
             int position = sim2;
             runUssdCode(command, position, id);
         }
+
 
     }
 
@@ -237,14 +245,14 @@ public class BackgroundService extends Service {
                 super.handleMessage(msg); //no need to change anything here
             }
         };
-        ussdResponseCallback = new TelephonyManager.UssdResponseCallback() {
+        @SuppressLint({"NewApi", "LocalSuppress"}) TelephonyManager.UssdResponseCallback ussdResponseCallback = new TelephonyManager.UssdResponseCallback() {
             @Override
             public void onReceiveUssdResponse(TelephonyManager telephonyManager, String request, CharSequence response) {
                 //if our request is successful then we get response here
                 Log.d("BackgroundService", "onReceiveUssdResponse: "+response.toString());
                 updaterequestdetails(response.toString(), "completed", id);
                 PreferenceUtils.saveUpdateStatus("completed", getApplicationContext());
-                sendNotification(ussd, response.toString(), "USSD");
+                //sendNotification(ussd, response.toString(), "USSD");
             }
 
             @Override
@@ -255,7 +263,7 @@ public class BackgroundService extends Service {
                 updaterequestdetails("request failed "+request.toString(), "failed", id);
                 Log.d(this.getClass().getName(), "response" + failureCode);
                 PreferenceUtils.saveUpdateStatus("failed", getApplicationContext());
-                sendNotification(ussd, "failed to dial "+ussd, "USSD");
+                //sendNotification(ussd, "failed to dial "+ussd, "USSD");
             }
         };
         manager.createForSubscriptionId(position).sendUssdRequest(ussd
@@ -281,7 +289,7 @@ public class BackgroundService extends Service {
         NotificationChannel messagesChannel = new NotificationChannel(
                 "messages channel",
                 "messages channel",
-                NotificationManager.IMPORTANCE_HIGH
+                NotificationManager.IMPORTANCE_NONE
         );
         notificationManager.createNotificationChannel(messagesChannel);
         Notification not = builder.build();

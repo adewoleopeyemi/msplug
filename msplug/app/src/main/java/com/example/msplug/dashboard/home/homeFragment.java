@@ -248,7 +248,14 @@ public class homeFragment extends Fragment {
     private void updatePhoneDetails(){
         List<SubscriptionInfo> subscriptionInfos = SubscriptionManager.from(getContext()).getActiveSubscriptionInfoList();
         String sim_1 = (String) subscriptionInfos.get(0).getCarrierName();
-        String sim_2 = (String) subscriptionInfos.get(1).getCarrierName();
+        String sim_2;
+        try{
+            sim_2 = (String) subscriptionInfos.get(1).getCarrierName();
+        }
+        catch (Exception e){
+            sim_2 = "Empty";
+        }
+
         HashMap<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
         headers.put("Authorization", "Token "+PreferenceUtils.getToken(getContext()));
