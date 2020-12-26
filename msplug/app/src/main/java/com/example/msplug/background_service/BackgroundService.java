@@ -2,15 +2,10 @@ package com.example.msplug.background_service;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -23,7 +18,6 @@ import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -36,10 +30,9 @@ import com.example.msplug.retrofit.endpoints.endpoint_request_detail.apirequestd
 import com.example.msplug.retrofit.endpoints.endpoint_request_detail.requestdetailsbody;
 import com.example.msplug.retrofit.endpoints.endpoint_request_list.apirequestlist;
 import com.example.msplug.retrofit.endpoints.endpoint_request_list.requestlistresponse;
+import com.example.msplug.notification.NotificationHelper;
 import com.example.msplug.utils.sharedPrefences.PreferenceUtils;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -59,6 +52,7 @@ public class BackgroundService extends Service {
     Handler handlerx;
     TelephonyManager manager;
     TelephonyManager.UssdResponseCallback ussdResponseCallback;
+    private NotificationHelper helper;
 
     @Override
     public void onCreate() {
@@ -87,6 +81,7 @@ public class BackgroundService extends Service {
                 super.handleMessage(msg); //no need to change anything here
             }
         };
+        helper = new NotificationHelper(this);
 
         String input = intent.getStringExtra(ONLINE_STATUS);
         Intent notificationIntent = new Intent(this, dashboardActivity.class);
@@ -108,11 +103,10 @@ public class BackgroundService extends Service {
 
 
         handlerx = new Handler();
-        final int delay = 15000; // 1000 milliseconds == 1 second
+        final int delay = 35000; // 1000 milliseconds == 1 second
 
 
         stillLoading = true;
-
         runnable = new Runnable() {
             @Override
             public void run() {
@@ -174,10 +168,11 @@ public class BackgroundService extends Service {
             position = 2;
         }
 
+        
         SmsManager smsMan = SmsManager.getDefault();
         SmsManager.getSmsManagerForSubscriptionId(position).sendTextMessage(recipient, null, command, null, null);;
         updaterequestdetails(command + " sent to " + recipient + " successful ", "completed", id);
-        sendNotification(command, command + " sent to " + recipient + " successful", "SMS");
+        sendNotification(command + " sent to " + recipient + " successful", "SMS");
     }
 
 
@@ -252,7 +247,7 @@ public class BackgroundService extends Service {
                 Log.d("BackgroundService", "onReceiveUssdResponse: "+response.toString());
                 updaterequestdetails(response.toString(), "completed", id);
                 PreferenceUtils.saveUpdateStatus("completed", getApplicationContext());
-                //sendNotification(ussd, response.toString(), "USSD");
+                sendNotification(response.toString(), "USSD");
             }
 
             @Override
@@ -270,30 +265,9 @@ public class BackgroundService extends Service {
                 ,ussdResponseCallback,handler);
     }
 
-    @SuppressLint("NewApi")
-    private void sendNotification(String ussd, String toString, String request_type) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "message channel")
-                .setContentTitle("New ")
-                .setContentText(""+ussd+": "+toString)
-                .setSmallIcon(R.drawable.msplugnotificationicon)
-                .setAutoCancel(true);
-        Intent intent = new Intent(this, dashboardActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.putExtra("frag_to_start", "messages");
-        intent.putExtra("request_type", request_type);
-        PendingIntent pi = PendingIntent.getActivity(this, 2, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        builder.setContentIntent(pi);
-        NotificationManager notificationManager = (NotificationManager) this.getSystemService(
-                Context.NOTIFICATION_SERVICE
-        );
-        NotificationChannel messagesChannel = new NotificationChannel(
-                "messages channel",
-                "messages channel",
-                NotificationManager.IMPORTANCE_NONE
-        );
-        notificationManager.createNotificationChannel(messagesChannel);
-        Notification not = builder.build();
-        notificationManager.notify(6, not);
+    private void sendNotification(String response_message, String request_type) {
+        NotificationCompat.Builder nb = helper.getChannelNotification(response_message, request_type);
+        helper.getManager().notify(12345, nb.build());
     }
 
 

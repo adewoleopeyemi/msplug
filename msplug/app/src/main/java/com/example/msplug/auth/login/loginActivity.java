@@ -15,6 +15,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.msplug.R;
+import com.example.msplug.auth.MainActivity;
+import com.example.msplug.auth.instructions.instructions;
 import com.example.msplug.dashboard.view.dashboardActivity;
 import com.example.msplug.retrofit.client.Client;
 import com.example.msplug.retrofit.endpoints.endpoint_login.apilogin;
@@ -39,6 +41,9 @@ public class loginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (PreferenceUtils.getIsFirstTimeUser(getApplicationContext()) == null ){
+            PreferenceUtils.saveIsFirstTimeUser("false", getApplicationContext());
+        }
         if (PreferenceUtils.getToken(this) != null ){
             Intent intent = new Intent(loginActivity.this, dashboardActivity.class);
             startActivity(intent);
@@ -120,7 +125,6 @@ public class loginActivity extends AppCompatActivity {
                                 PreferenceUtils.saveToken(token, getApplicationContext());
                                 PreferenceUtils.saveDeviceID(deviceIDs, getApplicationContext());
                             }
-                            Toast.makeText(loginActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
                             Intent Dashboard = new Intent(loginActivity.this, dashboardActivity.class);
                             startActivity(Dashboard);
                             finish();

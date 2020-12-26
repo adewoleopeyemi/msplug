@@ -97,7 +97,7 @@ public class dashboardActivity extends AppCompatActivity implements Connectivity
         BottomNavigationView navigationView = (BottomNavigationView) findViewById(R.id.navigation);
         navigationView.setOnNavigationItemSelectedListener(selectedListener);
 
-        if (frag_to_start != null && frag_to_start.equals("messages")){
+        if (frag_to_start != null){
             messagesFragment fragment1 = new messagesFragment();
             Bundle bundle = new Bundle();
             bundle.putString("request_type", request_type);
@@ -105,6 +105,7 @@ public class dashboardActivity extends AppCompatActivity implements Connectivity
             fragment1.setArguments(bundle);
             ft1.replace(R.id.content, fragment1, "");
             ft1.commit();
+            navigationView.setSelectedItemId(R.id.action_message);
         }
         else{
             homeFragment fragment1 = new homeFragment();
@@ -186,7 +187,7 @@ public class dashboardActivity extends AppCompatActivity implements Connectivity
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        finish();
+        finishAffinity();
     }
 
 }

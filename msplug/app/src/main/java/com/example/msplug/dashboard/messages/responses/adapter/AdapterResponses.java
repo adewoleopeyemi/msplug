@@ -38,6 +38,7 @@ public class AdapterResponses extends RecyclerView.Adapter<AdapterResponses.Hold
         int pos = position+1;
         holder.responseCount.setText(""+pos);
         holder.ussd.setText(responses.get(position).getCommand());
+        holder.sim_slot.setText(responses.get(position).getSim_slot());
     }
 
     @Override
@@ -46,13 +47,14 @@ public class AdapterResponses extends RecyclerView.Adapter<AdapterResponses.Hold
     }
 
     class Holder extends RecyclerView.ViewHolder{
-        TextView ussd, responsemessage, responseCount, date;
+        TextView ussd, responsemessage, responseCount, date, sim_slot;
         public Holder(@NonNull View itemView) {
             super(itemView);
             ussd = itemView.findViewById(R.id.USSD);
             responseCount = itemView.findViewById(R.id.responseCount);
             responsemessage = itemView.findViewById(R.id.responsemessage);
             date = itemView.findViewById(R.id.date);
+            sim_slot = itemView.findViewById(R.id.sim_slot);
         }
     }
 }

@@ -131,7 +131,7 @@ public class ResponsesFragment extends Fragment {
             @Override
             public void onResponse(Call<List<requestlistresponse>> call, Response<List<requestlistresponse>> response) {
                 List<requestlistresponse> resp = response.body();
-
+                REQ.clear();
                 for (int i=0; i<resp.size(); i++){
                     requestlistresponse requestlist = resp.get(i);
                     if (request_type.equals("USSD response")&& requestlist.getRequest_type().equals("USSD")&&requestlist.getStatus().equals("completed")){

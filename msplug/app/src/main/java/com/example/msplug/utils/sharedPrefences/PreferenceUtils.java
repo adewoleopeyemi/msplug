@@ -77,4 +77,16 @@ public class PreferenceUtils {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getString(Constants.DEVICE_NAME, null);
     }
+
+    public static boolean saveIsFirstTimeUser(String isFirstTimeUser, Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor prefsEditor = prefs.edit();
+        prefsEditor.putString(Constants.IS_FIRST_TIME_USER, isFirstTimeUser);
+        prefsEditor.apply();
+        return true;
+    }
+    public static String getIsFirstTimeUser(Context context) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return prefs.getString(Constants.IS_FIRST_TIME_USER, null);
+    }
 }

@@ -2,6 +2,7 @@ package com.example.msplug.dashboard.home;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -163,6 +164,10 @@ public class homeFragment extends Fragment {
         if (PreferenceUtils.getStatus(getActivity())!= null && PreferenceUtils.getStatus(getActivity()).equals("online")){
             toggleBtn.setChecked(true);
             dummyAnim.playAnimation();
+            if (!isMyServiceRunning(BackgroundService.class)){
+                startBackgroundService("Connected");
+            }
+
         }
         else{
             toggleBtn.setChecked(false);
@@ -280,6 +285,15 @@ public class homeFragment extends Fragment {
             }
         });
 
+    }
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getActivity().getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
     private void updateStatus(String status){
         Retrofit retrofit = Client.getRetrofit("https://www.msplug.com/api/");

@@ -11,5 +11,7 @@ public class Constants {
     public static final String DEVICE_ID = "";
     //used to save device name;
     public static final String DEVICE_NAME = "";
+    //used to get if a user is a first time user
+    public static final String IS_FIRST_TIME_USER=null;
 
 }
