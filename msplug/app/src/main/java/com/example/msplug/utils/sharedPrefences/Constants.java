@@ -8,14 +8,12 @@ public class Constants {
     //used to save the status update state
     public static final String STATUS = "completed";
     //used to save device ID;
-    public static final String DEVICE_ID = "";
-    //used to save device name;
-    public static final String DEVICE_NAME = "";
+    public static final String DEVICE_ID = "device id";
     //used to get if a user is a first time user
     public static final String IS_FIRST_TIME_USER=null;
     //used to save current request id
-    public static final String CUR_REQUEST_ID = null;
+    public static final String CUR_REQUEST = "this";
     //used to save current response
-    public static final String CUR_REPONSE_MESSAGE = null;
+    public static final String CUR_REPONSE_MESSAGE = "that";
 
 }

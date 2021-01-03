@@ -49,7 +49,7 @@ public class PreferenceUtils {
 
     public static String getUpdateStatus(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getString(Constants.STATUS, null);
+        return prefs.getString(Constants.STATUS, "");
     }
 
     public static boolean saveDeviceID(String device_ID, Context context) {
@@ -65,19 +65,6 @@ public class PreferenceUtils {
         return prefs.getString(Constants.DEVICE_ID, null);
     }
 
-    public static boolean saveDeviceName(String device_Name, Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        SharedPreferences.Editor prefsEditor = prefs.edit();
-        prefsEditor.putString(Constants.DEVICE_NAME, device_Name);
-        prefsEditor.apply();
-        return true;
-    }
-
-    public static String getDeviceName(Context context) {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getString(Constants.DEVICE_NAME, null);
-    }
-
     public static boolean saveIsFirstTimeUser(String isFirstTimeUser, Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor prefsEditor = prefs.edit();
@@ -89,16 +76,17 @@ public class PreferenceUtils {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return prefs.getString(Constants.IS_FIRST_TIME_USER, null);
     }
-    public static boolean savePrevRequestId(int request_id, Context context) {
+
+    public static boolean savePrevRequestId(String id, Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor prefsEditor = prefs.edit();
-        prefsEditor.putInt(Constants.CUR_REQUEST_ID, request_id);
+        prefsEditor.putString(Constants.CUR_REQUEST, id);
         prefsEditor.apply();
         return true;
     }
-    public static int getPrevRequestId(Context context) {
+    public static String getPrevRequestId(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getInt(Constants.CUR_REQUEST_ID, 0);
+        return prefs.getString(Constants.CUR_REQUEST, null);
     }
 
     public static boolean savePrevResponse(String message, Context context) {
@@ -110,7 +98,7 @@ public class PreferenceUtils {
     }
     public static String getPrevResponse(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return prefs.getString(Constants.CUR_REPONSE_MESSAGE, null);
+        return prefs.getString(Constants.CUR_REPONSE_MESSAGE, "");
     }
 
 }

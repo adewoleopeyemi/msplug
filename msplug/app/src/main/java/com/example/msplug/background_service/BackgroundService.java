@@ -121,6 +121,7 @@ public class BackgroundService extends Service {
         return START_NOT_STICKY;
     }
 
+    boolean updated = false;
     private void refreshevery15sec() {
         Retrofit retrofit = Client.getRetrofit("https://www.msplug.com/api/");
         apirequestlist requestlist = retrofit.create(apirequestlist.class);
@@ -128,28 +129,49 @@ public class BackgroundService extends Service {
         headers.put("Content-Type", "application/json");
         headers.put("Authorization", "Token "+PreferenceUtils.getToken(this));
         Call<body> call = requestlist.getRequestList(headers, PreferenceUtils.getDeviceID(this));
-        Toast.makeText(this, ""+PreferenceUtils.getToken(this), Toast.LENGTH_SHORT).show();
         call.enqueue(new Callback<body>() {
             @Override
             public void onResponse(Call<body> call, Response<body> response) {
                 body resp = (body) response.body();
 
                 requestlistresponse d = resp.getData();
-                Toast.makeText(BackgroundService.this, "" + resp.getData(), Toast.LENGTH_SHORT).show();
-                try {
+
                     String requesttype = d.getRequest_type();
                     String sim_slot = d.getSim_slot();
                     String command = d.getCommand();
                     int id = d.getId();
-                    String device = d.getDevice();
-                    String device_name = d.getDevice_name();
                     String recipient = d.getReceipient();
-                    Toast.makeText(BackgroundService.this, "" + command, Toast.LENGTH_SHORT).show();
 
-                    if (PreferenceUtils.getPrevRequestId(BackgroundService.this) != 0 && PreferenceUtils.getPrevRequestId(BackgroundService.this) == id){
-                        updaterequestdetails(PreferenceUtils.getPrevResponse(BackgroundService.this), "completed", id);
+
+
+
+                    //Logic Used to handle issues associated with Airtel
+                    if (PreferenceUtils.getPrevRequestId(BackgroundService.this) != null){
+                        int prevReqId = Integer.parseInt(PreferenceUtils.getPrevRequestId(BackgroundService.this));
+                        if (prevReqId == id){
+                            updaterequestdetails(PreferenceUtils.getPrevResponse(BackgroundService.this), "completed", id);
+                            //Used to handle a case where ussd has dialed and network problem happens immediately afterwards
+                            if (updated){
+                                PreferenceUtils.savePrevResponse("", BackgroundService.this);
+                                PreferenceUtils.savePrevRequestId(null, BackgroundService.this);
+                                PreferenceUtils.saveUpdateStatus("", BackgroundService.this);
+                                updated = false;
+                            }
+                        }
+
+                        else {
+                            if (requesttype != null) {
+                                if (requesttype.equals("USSD")) {
+                                    dialUSSD(sim_slot, command, id);
+                                    stillLoading = false;
+                                } else if (requesttype.equals("SMS")) {
+                                    sendSMS(sim_slot, recipient, command, id);
+                                    stillLoading = false;
+                                }
+                            }
+                        }
                     }
-                    else{
+                    else {
                         if (requesttype != null) {
                             if (requesttype.equals("USSD")) {
                                 dialUSSD(sim_slot, command, id);
@@ -160,12 +182,6 @@ public class BackgroundService extends Service {
                             }
                         }
                     }
-
-                } catch (
-                        Exception e) {
-                    Toast.makeText(BackgroundService.this, "Error Encountered " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-
             }
             @Override
             public void onFailure(Call<body> call, Throwable t) {
@@ -189,12 +205,10 @@ public class BackgroundService extends Service {
         
         SmsManager smsMan = SmsManager.getDefault();
         SmsManager.getSmsManagerForSubscriptionId(position).sendTextMessage(recipient, null, command, null, null);;
-        Toast.makeText(this, "sms sent", Toast.LENGTH_SHORT).show();
         updaterequestdetails(command + " sent to " + recipient + " successful ", "completed", id);
         sendNotification(command + " sent to " + recipient + " successful", "SMS");
-        PreferenceUtils.savePrevRequestId(id, BackgroundService.this);
+        PreferenceUtils.savePrevRequestId(String.valueOf(id), BackgroundService.this);
         PreferenceUtils.savePrevResponse(command + " sent to " + recipient + " successful", BackgroundService.this);
-        Toast.makeText(this, command + " sent to " + recipient + " successful", Toast.LENGTH_SHORT).show();
     }
 
 
@@ -240,8 +254,8 @@ public class BackgroundService extends Service {
         call.enqueue(new Callback<requestlistresponse>() {
             @Override
             public void onResponse(Call<requestlistresponse> call, Response<requestlistresponse> response) {
+                updated = true;
                 requestlistresponse resp = (requestlistresponse) response.body();
-                Toast.makeText(BackgroundService.this, "request sent with status"+resp.getStatus(), Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -269,7 +283,7 @@ public class BackgroundService extends Service {
                 Log.d("BackgroundService", "onReceiveUssdResponse: "+response.toString());
                 updaterequestdetails(response.toString(), "completed", id);
                 PreferenceUtils.saveUpdateStatus("completed", getApplicationContext());
-                PreferenceUtils.savePrevRequestId(id, BackgroundService.this);
+                PreferenceUtils.savePrevRequestId(String.valueOf(id), BackgroundService.this);
                 PreferenceUtils.savePrevResponse(response.toString(), BackgroundService.this);
                 sendNotification(response.toString(), "USSD");
             }
@@ -279,8 +293,12 @@ public class BackgroundService extends Service {
 
                 //request failures will be catched here
                 updaterequestdetails("ussd dial successful", "completed", id);
-                sendNotification("You have one incoming message from MsPlug. Please be sure to check back after some time for an update. Thank you", "USSD");
-                Toast.makeText(BackgroundService.this, "request failed to dial", Toast.LENGTH_SHORT).show();
+                sendNotification("You have one incoming message from MsPlug.\n" +
+                        " Please be sure to check back after some time for an update.\n" +
+                        " Thank you", "USSD");
+                PreferenceUtils.saveUpdateStatus("completed", getApplicationContext());
+                PreferenceUtils.savePrevRequestId(String.valueOf(id), BackgroundService.this);
+                PreferenceUtils.savePrevResponse("ussd dial successful", BackgroundService.this);
                 /**
                 updaterequestdetails("request failed "+request.toString(), "failed", id);
                 Log.d(this.getClass().getName(), "response" + failureCode);

@@ -132,35 +132,41 @@ public class ResponsesFragment extends Fragment {
             public void onResponse(Call<List<requestlistresponse>> call, Response<List<requestlistresponse>> response) {
                 List<requestlistresponse> resp = response.body();
                 REQ.clear();
-                for (int i=0; i<resp.size(); i++){
-                    requestlistresponse requestlist = resp.get(i);
-                    if (request_type.equals("USSD response")&& requestlist.getRequest_type().equals("USSD")&&requestlist.getStatus().equals("completed")){
-                        ModelResponse object = new ModelResponse();
-                        object.setId(requestlist.getId());
-                        object.setCommand(requestlist.getCommand());
-                        object.setDevice(requestlist.getDevice());
-                        object.setDevice_name(requestlist.getDevice_name());
-                        object.setReceipient(requestlist.getReceipient());
-                        object.setSim_slot(requestlist.getSim_slot());
-                        object.setRequest_type(requestlist.getRequest_type());
-                        object.setResponse_message(requestlist.getResponse_message());
-                        object.setRequest_date(requestlist.getRequest_date());
-                        REQ.add(object);
-                    }
-                    else if (request_type.equals("SMS response")&& requestlist.getRequest_type().equals("SMS")&&requestlist.getStatus().equals("completed")){
-                        ModelResponse object = new ModelResponse();
-                        object.setId(requestlist.getId());
-                        object.setCommand(requestlist.getCommand());
-                        object.setDevice(requestlist.getDevice());
-                        object.setDevice_name(requestlist.getDevice_name());
-                        object.setReceipient(requestlist.getReceipient());
-                        object.setSim_slot(requestlist.getSim_slot());
-                        object.setRequest_type(requestlist.getRequest_type());
-                        object.setResponse_message(requestlist.getResponse_message());
-                        object.setRequest_date(requestlist.getRequest_date());
-                        REQ.add(object);
+                if (resp != null){
+                    for (int i=0; i<resp.size(); i++){
+                        requestlistresponse requestlist = resp.get(i);
+                        if (requestlist.getRequest_type() != null){
+                            if (request_type.equals("USSD response")&& requestlist.getRequest_type().equals("USSD")&&requestlist.getStatus().equals("completed")){
+                                ModelResponse object = new ModelResponse();
+                                object.setId(requestlist.getId());
+                                object.setCommand(requestlist.getCommand());
+                                object.setDevice(requestlist.getDevice());
+                                object.setDevice_name(requestlist.getDevice_name());
+                                object.setReceipient(requestlist.getReceipient());
+                                object.setSim_slot(requestlist.getSim_slot());
+                                object.setRequest_type(requestlist.getRequest_type());
+                                object.setResponse_message(requestlist.getResponse_message());
+                                object.setRequest_date(requestlist.getRequest_date());
+                                REQ.add(object);
+                            }
+                            else if (request_type.equals("SMS response")&& requestlist.getRequest_type().equals("SMS")&&requestlist.getStatus().equals("completed")){
+                                ModelResponse object = new ModelResponse();
+                                object.setId(requestlist.getId());
+                                object.setCommand(requestlist.getCommand());
+                                object.setDevice(requestlist.getDevice());
+                                object.setDevice_name(requestlist.getDevice_name());
+                                object.setReceipient(requestlist.getReceipient());
+                                object.setSim_slot(requestlist.getSim_slot());
+                                object.setRequest_type(requestlist.getRequest_type());
+                                object.setResponse_message(requestlist.getResponse_message());
+                                object.setRequest_date(requestlist.getRequest_date());
+                                REQ.add(object);
+                            }
+                        }
+
                     }
                 }
+
                 AdapterResponses adapterResponses = new AdapterResponses(getActivity(), REQ);
                 LinearLayoutManager lm = new LinearLayoutManager(getActivity());
                 adapterResponses.notifyDataSetChanged();

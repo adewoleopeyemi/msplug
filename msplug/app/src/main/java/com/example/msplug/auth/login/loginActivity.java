@@ -117,7 +117,6 @@ public class loginActivity extends AppCompatActivity {
                     if (jsonObjectdata != null){
                         String deviceIDs = jsonObjectdata.getString("deviceID");
                         String token = jsonObjectdata.getString("token");
-                        String deviceStatus = jsonObjectdata.getString("device_status");
 
                         //Use device ID for validation
                         if (deviceIDs.equals(deviceID)){
@@ -151,7 +150,7 @@ public class loginActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        finish();
+        finishAffinity();
         super.onBackPressed();
     }
 }
