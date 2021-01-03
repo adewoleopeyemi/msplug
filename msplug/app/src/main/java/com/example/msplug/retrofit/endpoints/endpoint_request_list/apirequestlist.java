@@ -16,5 +16,5 @@ public interface apirequestlist {
             "Authorization:Token 706d7cb935c7fe41c648c377988108c3acfad136"
     })**/
     @GET("request-list/{deviceID}")
-    Call<requestlistresponse> getRequestList(@HeaderMap Map<String, String> headers, @Path("deviceID") String deviceID);
+    Call<body> getRequestList(@HeaderMap Map<String, String> headers, @Path("deviceID") String deviceID);
 }

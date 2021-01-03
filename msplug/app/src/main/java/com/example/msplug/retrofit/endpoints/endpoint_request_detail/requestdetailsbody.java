@@ -7,6 +7,8 @@ public class requestdetailsbody {
     private String response_message;
     @SerializedName("status")
     private String status;
+    @SerializedName("device")
+    private String device;
 
     public String getResponse_message() {
         return response_message;
@@ -22,5 +24,13 @@ public class requestdetailsbody {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getDevice() {
+        return device;
+    }
+
+    public void setDevice(String device) {
+        this.device = device;
     }
 }

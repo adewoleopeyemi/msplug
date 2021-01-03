@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class ModelResponse{
     int id;
-    int device;
+    String device;
     String device_name;
     String sim_slot;
     String request_type;
@@ -25,7 +25,7 @@ public class ModelResponse{
     public ModelResponse() {
     }
 
-    public ModelResponse(int id, int device, String device_name, String sim_slot, String request_type, String response_message, String command, String receipient, String status) {
+    public ModelResponse(int id, String device, String device_name, String sim_slot, String request_type, String response_message, String command, String receipient, String status) {
         this.id = id;
         this.device = device;
         this.device_name = device_name;
@@ -45,11 +45,11 @@ public class ModelResponse{
         this.id = id;
     }
 
-    public int getDevice() {
+    public String getDevice() {
         return device;
     }
 
-    public void setDevice(int device) {
+    public void setDevice(String device) {
         this.device = device;
     }
 

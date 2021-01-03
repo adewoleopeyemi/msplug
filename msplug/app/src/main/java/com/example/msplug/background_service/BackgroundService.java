@@ -18,6 +18,7 @@ import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,9 +30,12 @@ import com.example.msplug.retrofit.client.Client;
 import com.example.msplug.retrofit.endpoints.endpoint_request_detail.apirequestdetail;
 import com.example.msplug.retrofit.endpoints.endpoint_request_detail.requestdetailsbody;
 import com.example.msplug.retrofit.endpoints.endpoint_request_list.apirequestlist;
+import com.example.msplug.retrofit.endpoints.endpoint_request_list.body;
 import com.example.msplug.retrofit.endpoints.endpoint_request_list.requestlistresponse;
 import com.example.msplug.notification.NotificationHelper;
 import com.example.msplug.utils.sharedPrefences.PreferenceUtils;
+
+import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.List;
@@ -103,8 +107,7 @@ public class BackgroundService extends Service {
 
 
         handlerx = new Handler();
-        final int delay = 35000; // 1000 milliseconds == 1 second
-
+        final int delay = 50000; // 1000 milliseconds == 1 second
 
         stillLoading = true;
         runnable = new Runnable() {
@@ -124,38 +127,53 @@ public class BackgroundService extends Service {
         HashMap<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
         headers.put("Authorization", "Token "+PreferenceUtils.getToken(this));
-        Call<requestlistresponse> call = requestlist.getRequestList(headers, PreferenceUtils.getDeviceID(this));
-        call.enqueue(new Callback<requestlistresponse>() {
+        Call<body> call = requestlist.getRequestList(headers, PreferenceUtils.getDeviceID(this));
+        Toast.makeText(this, ""+PreferenceUtils.getToken(this), Toast.LENGTH_SHORT).show();
+        call.enqueue(new Callback<body>() {
             @Override
-            public void onResponse(Call<requestlistresponse> call, Response<requestlistresponse> response) {
-                requestlistresponse resp = (requestlistresponse) response.body();
-                String requesttype = resp.getRequest_type();
-                String sim_slot = resp.getSim_slot();
-                String command = resp.getCommand();
-                int id = resp.getId();
-                int device = resp.getDevice();
-                String device_name = resp.getDevice_name();
-                String recipient = resp.getReceipient();
+            public void onResponse(Call<body> call, Response<body> response) {
+                body resp = (body) response.body();
 
-                if (requesttype!= null){
-                    if (requesttype.equals("USSD")) {
-                        dialUSSD(sim_slot, command, id);
-                        stillLoading = false;
+                requestlistresponse d = resp.getData();
+                Toast.makeText(BackgroundService.this, "" + resp.getData(), Toast.LENGTH_SHORT).show();
+                try {
+                    String requesttype = d.getRequest_type();
+                    String sim_slot = d.getSim_slot();
+                    String command = d.getCommand();
+                    int id = d.getId();
+                    String device = d.getDevice();
+                    String device_name = d.getDevice_name();
+                    String recipient = d.getReceipient();
+                    Toast.makeText(BackgroundService.this, "" + command, Toast.LENGTH_SHORT).show();
+
+                    if (PreferenceUtils.getPrevRequestId(BackgroundService.this) != 0 && PreferenceUtils.getPrevRequestId(BackgroundService.this) == id){
+                        updaterequestdetails(PreferenceUtils.getPrevResponse(BackgroundService.this), "completed", id);
                     }
-                    else if (requesttype.equals("SMS")) {
-                        sendSMS(sim_slot, recipient, command, id);
-                        stillLoading = false;
+                    else{
+                        if (requesttype != null) {
+                            if (requesttype.equals("USSD")) {
+                                dialUSSD(sim_slot, command, id);
+                                stillLoading = false;
+                            } else if (requesttype.equals("SMS")) {
+                                sendSMS(sim_slot, recipient, command, id);
+                                stillLoading = false;
+                            }
+                        }
                     }
+
+                } catch (
+                        Exception e) {
+                    Toast.makeText(BackgroundService.this, "Error Encountered " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
 
             }
-
             @Override
-            public void onFailure(Call<requestlistresponse> call, Throwable t) {
+            public void onFailure(Call<body> call, Throwable t) {
 
             }
         });
     }
+
 
 
 
@@ -171,8 +189,12 @@ public class BackgroundService extends Service {
         
         SmsManager smsMan = SmsManager.getDefault();
         SmsManager.getSmsManagerForSubscriptionId(position).sendTextMessage(recipient, null, command, null, null);;
+        Toast.makeText(this, "sms sent", Toast.LENGTH_SHORT).show();
         updaterequestdetails(command + " sent to " + recipient + " successful ", "completed", id);
         sendNotification(command + " sent to " + recipient + " successful", "SMS");
+        PreferenceUtils.savePrevRequestId(id, BackgroundService.this);
+        PreferenceUtils.savePrevResponse(command + " sent to " + recipient + " successful", BackgroundService.this);
+        Toast.makeText(this, command + " sent to " + recipient + " successful", Toast.LENGTH_SHORT).show();
     }
 
 
@@ -200,8 +222,6 @@ public class BackgroundService extends Service {
             int position = sim2;
             runUssdCode(command, position, id);
         }
-
-
     }
 
 
@@ -212,6 +232,7 @@ public class BackgroundService extends Service {
 
         body.setResponse_message(response_message);
         body.setStatus(status);
+        body.setDevice(PreferenceUtils.getDeviceID(this));
         HashMap<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
         headers.put("Authorization", "Token "+PreferenceUtils.getToken(this));
@@ -220,6 +241,7 @@ public class BackgroundService extends Service {
             @Override
             public void onResponse(Call<requestlistresponse> call, Response<requestlistresponse> response) {
                 requestlistresponse resp = (requestlistresponse) response.body();
+                Toast.makeText(BackgroundService.this, "request sent with status"+resp.getStatus(), Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -247,6 +269,8 @@ public class BackgroundService extends Service {
                 Log.d("BackgroundService", "onReceiveUssdResponse: "+response.toString());
                 updaterequestdetails(response.toString(), "completed", id);
                 PreferenceUtils.saveUpdateStatus("completed", getApplicationContext());
+                PreferenceUtils.savePrevRequestId(id, BackgroundService.this);
+                PreferenceUtils.savePrevResponse(response.toString(), BackgroundService.this);
                 sendNotification(response.toString(), "USSD");
             }
 
@@ -254,10 +278,15 @@ public class BackgroundService extends Service {
             public void onReceiveUssdResponseFailed(TelephonyManager telephonyManager, String request, int failureCode) {
 
                 //request failures will be catched here
-
+                updaterequestdetails("ussd dial successful", "completed", id);
+                sendNotification("You have one incoming message from MsPlug. Please be sure to check back after some time for an update. Thank you", "USSD");
+                Toast.makeText(BackgroundService.this, "request failed to dial", Toast.LENGTH_SHORT).show();
+                /**
                 updaterequestdetails("request failed "+request.toString(), "failed", id);
                 Log.d(this.getClass().getName(), "response" + failureCode);
                 PreferenceUtils.saveUpdateStatus("failed", getApplicationContext());
+                Toast.makeText(BackgroundService.this, "request failed to dial", Toast.LENGTH_SHORT).show();
+                **/
                 //sendNotification(ussd, "failed to dial "+ussd, "USSD");
             }
         };

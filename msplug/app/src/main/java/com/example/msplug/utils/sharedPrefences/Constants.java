@@ -13,5 +13,9 @@ public class Constants {
     public static final String DEVICE_NAME = "";
     //used to get if a user is a first time user
     public static final String IS_FIRST_TIME_USER=null;
+    //used to save current request id
+    public static final String CUR_REQUEST_ID = null;
+    //used to save current response
+    public static final String CUR_REPONSE_MESSAGE = null;
 
 }

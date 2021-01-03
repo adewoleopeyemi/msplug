@@ -6,7 +6,7 @@ public class requestlistresponse {
     @SerializedName("id")
     private int id;
     @SerializedName("device")
-    private int device;
+    private String device;
     @SerializedName("device_name")
     private String device_name;
     @SerializedName("sim_slot")
@@ -32,11 +32,11 @@ public class requestlistresponse {
         this.id = id;
     }
 
-    public int getDevice() {
+    public String getDevice() {
         return device;
     }
 
-    public void setDevice(int device) {
+    public void setDevice(String device) {
         this.device = device;
     }
 
