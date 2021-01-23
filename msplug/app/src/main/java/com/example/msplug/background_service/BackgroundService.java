@@ -163,10 +163,8 @@ public class BackgroundService extends Service {
                             if (requesttype != null) {
                                 if (requesttype.equals("USSD")) {
                                     dialUSSD(sim_slot, command, id);
-                                    stillLoading = false;
                                 } else if (requesttype.equals("SMS")) {
                                     sendSMS(sim_slot, recipient, command, id);
-                                    stillLoading = false;
                                 }
                             }
                         }
@@ -203,12 +201,13 @@ public class BackgroundService extends Service {
         }
 
         
-        SmsManager smsMan = SmsManager.getDefault();
-        SmsManager.getSmsManagerForSubscriptionId(position).sendTextMessage(recipient, null, command, null, null);;
-        updaterequestdetails(command + " sent to " + recipient + " successful ", "completed", id);
-        sendNotification(command + " sent to " + recipient + " successful", "SMS");
+        SmsManager smsMan = SmsManager.getSmsManagerForSubscriptionId(position);
+        smsMan.sendTextMessage(recipient, null, command, null, null);
         PreferenceUtils.savePrevRequestId(String.valueOf(id), BackgroundService.this);
         PreferenceUtils.savePrevResponse(command + " sent to " + recipient + " successful", BackgroundService.this);
+        updaterequestdetails(command + " sent to " + recipient + " successful ", "completed", id);
+        sendNotification(command + " sent to " + recipient + " successful", "SMS");
+        stillLoading = false;
     }
 
 
@@ -254,18 +253,18 @@ public class BackgroundService extends Service {
         call.enqueue(new Callback<requestlistresponse>() {
             @Override
             public void onResponse(Call<requestlistresponse> call, Response<requestlistresponse> response) {
-                updated = true;
+                if (call.isExecuted()){
+                    updated = true;
+                }
                 requestlistresponse resp = (requestlistresponse) response.body();
             }
 
             @Override
             public void onFailure(Call<requestlistresponse> call, Throwable t) {
+                updated = false;
             }
         });
     }
-
-
-
     @SuppressLint({"NewApi", "MissingPermission"})
     public void runUssdCode(String ussd, int position, int id) {
         manager = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
@@ -286,6 +285,7 @@ public class BackgroundService extends Service {
                 PreferenceUtils.savePrevRequestId(String.valueOf(id), BackgroundService.this);
                 PreferenceUtils.savePrevResponse(response.toString(), BackgroundService.this);
                 sendNotification(response.toString(), "USSD");
+                stillLoading = false;
             }
 
             @Override
@@ -299,12 +299,7 @@ public class BackgroundService extends Service {
                 PreferenceUtils.saveUpdateStatus("completed", getApplicationContext());
                 PreferenceUtils.savePrevRequestId(String.valueOf(id), BackgroundService.this);
                 PreferenceUtils.savePrevResponse("ussd dial successful", BackgroundService.this);
-                /**
-                updaterequestdetails("request failed "+request.toString(), "failed", id);
-                Log.d(this.getClass().getName(), "response" + failureCode);
-                PreferenceUtils.saveUpdateStatus("failed", getApplicationContext());
-                Toast.makeText(BackgroundService.this, "request failed to dial", Toast.LENGTH_SHORT).show();
-                **/
+                stillLoading = false;
                 //sendNotification(ussd, "failed to dial "+ussd, "USSD");
             }
         };
